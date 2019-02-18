@@ -24,8 +24,10 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/golang/glog"
 	"github.com/spf13/pflag"
+	"go.uber.org/zap"
+
+	"go.zenithar.org/pkg/log"
 )
 
 // Feature type represent a feature and its matching flag
@@ -186,7 +188,7 @@ func (f *featureGate) Set(value string) error {
 		}
 		enabled[k] = boolValue
 		if boolValue && featureSpec.PreRelease == Deprecated {
-			glog.Warningf("enabling deprecated feature gate %s", k)
+			log.Bg().Warn("enabling deprecated feature gate", zap.Any("feature", k))
 		}
 
 		// Handle "special" features like "all alpha gates"
@@ -199,7 +201,7 @@ func (f *featureGate) Set(value string) error {
 	f.known.Store(known)
 	f.enabled.Store(enabled)
 
-	glog.V(1).Infof("feature gates: %v", enabled)
+	log.Bg().Info("feature gates", zap.Any("enabled", enabled))
 	return nil
 }
 
@@ -235,7 +237,7 @@ func (f *featureGate) SetFromMap(m map[string]bool) error {
 	f.known.Store(known)
 	f.enabled.Store(enabled)
 
-	glog.V(1).Infof("feature gates: %v", f.enabled)
+	log.Bg().Info("feature gates", zap.Any("enabled", enabled))
 	return nil
 }
 

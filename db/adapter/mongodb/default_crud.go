@@ -52,6 +52,8 @@ func NewCRUDTable(session *mongo.Client, db, table string) *Default {
 	}
 }
 
+// -----------------------------------------------------------------------------
+
 // GetTableName returns table's name
 func (d *Default) GetTableName() string {
 	return d.table
@@ -71,6 +73,8 @@ func (d *Default) GetTable() interface{} {
 func (d *Default) GetSession() interface{} {
 	return d.session
 }
+
+// -----------------------------------------------------------------------------
 
 // Insert inserts a document into the database
 func (d *Default) Insert(ctx context.Context, data interface{}) error {

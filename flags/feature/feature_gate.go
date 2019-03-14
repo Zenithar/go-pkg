@@ -54,13 +54,24 @@ var (
 		allAlphaGate: setUnsetAlphaGates,
 	}
 
+	// DefaultMutableGate is a mutable version of DefaultFeatureGate.
+	// Only top-level commands/options setup and the k8s.io/apiserver/pkg/util/feature/testing package should make use of this.
+	// Tests that need to modify feature gates for the duration of their test should use:
+	//   defer utilfeaturetesting.SetFeatureGateDuringTest(t, utilfeature.DefaultFeatureGate, features.<FeatureName>, <value>)()
+	DefaultMutableGate = NewFeatureGate()
+
 	// DefaultFeatureGate is a shared global FeatureGate.
-	DefaultFeatureGate = NewFeatureGate()
+	// Top-level commands/options setup that needs to modify this feature gate should use DefaultMutableFeatureGate.
+	DefaultFeatureGate Gate = DefaultMutableGate
 )
 
 // Spec represents feature flag information and version
 type Spec struct {
-	Default    bool
+	// Default is the default enablement state for the feature
+	Default bool
+	// LockToDefault indicates that the feature is locked to its default and cannot be changed
+	LockToDefault bool
+	// PreRelease indicates the maturity level of the feature
 	PreRelease prerelease
 }
 
@@ -79,9 +90,25 @@ const (
 	Deprecated = prerelease("DEPRECATED")
 )
 
-// Gate parses and stores flag gates for known features from
-// a string like feature1=true,feature2=false,...
+// Gate indicates whether a given feature is enabled or not
 type Gate interface {
+	// Enabled returns true if the key is enabled.
+	Enabled(key Feature) bool
+	// KnownFeatures returns a slice of strings describing the FeatureGate's known features.
+	KnownFeatures() []string
+	// DeepCopy returns a deep copy of the FeatureGate object, such that gates can be
+	// set on the copy without mutating the original. This is useful for validating
+	// config against potential feature gate changes before committing those changes.
+	DeepCopy() MutableGate
+
+	String() string
+}
+
+// MutableGate parses and stores flag gates for known features from
+// a string like feature1=true,feature2=false,...
+type MutableGate interface {
+	Gate
+
 	// AddFlag adds a flag for setting global feature gates to the specified FlagSet.
 	AddFlag(fs *pflag.FlagSet)
 	// Set parses and stores flag gates for known features
@@ -89,18 +116,8 @@ type Gate interface {
 	Set(value string) error
 	// SetFromMap stores flag gates for known features from a map[string]bool or returns an error
 	SetFromMap(m map[string]bool) error
-	// Enabled returns true if the key is enabled.
-	Enabled(key Feature) bool
 	// Add adds features to the featureGate.
 	Add(features map[Feature]Spec) error
-	// KnownFeatures returns a slice of strings describing the FeatureGate's known features.
-	KnownFeatures() []string
-	// DeepCopy returns a deep copy of the FeatureGate object, such that gates can be
-	// set on the copy without mutating the original. This is useful for validating
-	// config against potential feature gate changes before committing those changes.
-	DeepCopy() Gate
-	// String returns features flag representation
-	String() string
 }
 
 // featureGate implements FeatureGate as well as pflag.Value for flag parsing.
@@ -109,7 +126,7 @@ type featureGate struct {
 
 	// lock guards writes to known, enabled, and reads/writes of closed
 	lock sync.Mutex
-	// known holds a map[Feature]FeatureSpec
+	// known holds a map[Feature]Spec
 	known *atomic.Value
 	// enabled holds a map[Feature]bool
 	enabled *atomic.Value
@@ -131,7 +148,7 @@ func setUnsetAlphaGates(known map[Feature]Spec, enabled map[Feature]bool, val bo
 var _ pflag.Value = &featureGate{}
 
 // NewFeatureGate instantiate a feature set
-func NewFeatureGate() Gate {
+func NewFeatureGate() MutableGate {
 	known := map[Feature]Spec{}
 	for k, v := range defaultFeatures {
 		known[k] = v
@@ -155,54 +172,24 @@ func NewFeatureGate() Gate {
 // Set parses a string of the form "key1=value1,key2=value2,..." into a
 // map[string]bool of known keys or returns an error.
 func (f *featureGate) Set(value string) error {
-	f.lock.Lock()
-	defer f.lock.Unlock()
-
-	// Copy existing state
-	known := map[Feature]Spec{}
-	for k, v := range f.known.Load().(map[Feature]Spec) {
-		known[k] = v
-	}
-	enabled := map[Feature]bool{}
-	for k, v := range f.enabled.Load().(map[Feature]bool) {
-		enabled[k] = v
-	}
-
+	m := make(map[string]bool)
 	for _, s := range strings.Split(value, ",") {
 		if len(s) == 0 {
 			continue
 		}
 		arr := strings.SplitN(s, "=", 2)
-		k := Feature(strings.TrimSpace(arr[0]))
-		featureSpec, ok := known[k]
-		if !ok {
-			return fmt.Errorf("unrecognized key: %s", k)
-		}
+		k := strings.TrimSpace(arr[0])
 		if len(arr) != 2 {
 			return fmt.Errorf("missing bool value for %s", k)
 		}
 		v := strings.TrimSpace(arr[1])
 		boolValue, err := strconv.ParseBool(v)
 		if err != nil {
-			return fmt.Errorf("invalid value of %s: %s, err: %v", k, v, err)
+			return fmt.Errorf("invalid value of %s=%s, err: %v", k, v, err)
 		}
-		enabled[k] = boolValue
-		if boolValue && featureSpec.PreRelease == Deprecated {
-			log.Bg().Warn("enabling deprecated feature gate", zap.Any("feature", k))
-		}
-
-		// Handle "special" features like "all alpha gates"
-		if fn, found := f.special[k]; found {
-			fn(known, enabled, boolValue)
-		}
+		m[k] = boolValue
 	}
-
-	// Persist changes
-	f.known.Store(known)
-	f.enabled.Store(enabled)
-
-	log.Bg().Info("feature gates", zap.Any("enabled", enabled))
-	return nil
+	return f.SetFromMap(m)
 }
 
 // SetFromMap stores flag gates for known features from a map[string]bool or returns an error
@@ -222,14 +209,23 @@ func (f *featureGate) SetFromMap(m map[string]bool) error {
 
 	for k, v := range m {
 		k := Feature(k)
-		_, ok := known[k]
+		Spec, ok := known[k]
 		if !ok {
-			return fmt.Errorf("unrecognized key: %s", k)
+			return fmt.Errorf("unrecognized feature gate: %s", k)
+		}
+		if Spec.LockToDefault && Spec.Default != v {
+			return fmt.Errorf("cannot set feature gate %v to %v, feature is locked to %v", k, v, Spec.Default)
 		}
 		enabled[k] = v
 		// Handle "special" features like "all alpha gates"
 		if fn, found := f.special[k]; found {
 			fn(known, enabled, v)
+		}
+
+		if Spec.PreRelease == Deprecated {
+			log.Bg().Warn(fmt.Sprintf("Setting deprecated feature gate %s=%t. It will be removed in a future release.", k, v))
+		} else if Spec.PreRelease == GA {
+			log.Bg().Warn(fmt.Sprintf("Setting GA feature gate %s=%t. It will be removed in a future release.", k, v))
 		}
 	}
 
@@ -237,7 +233,8 @@ func (f *featureGate) SetFromMap(m map[string]bool) error {
 	f.known.Store(known)
 	f.enabled.Store(enabled)
 
-	log.Bg().Info("feature gates", zap.Any("enabled", enabled))
+	log.Bg().Info("feature gates", zap.Any("gates", f.enabled))
+
 	return nil
 }
 
@@ -311,11 +308,10 @@ func (f *featureGate) AddFlag(fs *pflag.FlagSet) {
 func (f *featureGate) KnownFeatures() []string {
 	var known []string
 	for k, v := range f.known.Load().(map[Feature]Spec) {
-		pre := ""
-		if v.PreRelease != GA {
-			pre = fmt.Sprintf("%s - ", v.PreRelease)
+		if v.PreRelease == GA || v.PreRelease == Deprecated {
+			continue
 		}
-		known = append(known, fmt.Sprintf("%s=true|false (%sdefault=%t)", k, pre, v.Default))
+		known = append(known, fmt.Sprintf("%s=true|false (%s - default=%t)", k, v.PreRelease, v.Default))
 	}
 	sort.Strings(known)
 	return known
@@ -324,7 +320,7 @@ func (f *featureGate) KnownFeatures() []string {
 // DeepCopy returns a deep copy of the FeatureGate object, such that gates can be
 // set on the copy without mutating the original. This is useful for validating
 // config against potential feature gate changes before committing those changes.
-func (f *featureGate) DeepCopy() Gate {
+func (f *featureGate) DeepCopy() MutableGate {
 	// Copy existing state.
 	known := map[Feature]Spec{}
 	for k, v := range f.known.Load().(map[Feature]Spec) {

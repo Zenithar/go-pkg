@@ -28,7 +28,8 @@ import (
 
 	"go.zenithar.org/pkg/log"
 
-	"github.com/mongodb/mongo-go-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/zap"
 )
 
@@ -50,7 +51,7 @@ func Connection(ctx context.Context, cfg *Configuration) (*mongo.Client, error) 
 	defer cancel()
 
 	// Extract database name from connection string
-	client, err := mongo.Connect(ctx, cfg.ConnectionString)
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.ConnectionString))
 	if err != nil {
 		log.For(ctx).Error("Unable to connect to MongoDB", zap.Error(err))
 		return nil, err

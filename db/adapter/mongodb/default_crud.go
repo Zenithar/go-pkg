@@ -25,10 +25,10 @@ package mongodb
 import (
 	"context"
 
-	"github.com/mongodb/mongo-go-driver/bson"
-	"github.com/mongodb/mongo-go-driver/mongo"
-	"github.com/mongodb/mongo-go-driver/mongo/options"
 	"github.com/pkg/errors"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"go.zenithar.org/pkg/db"
 	"go.zenithar.org/pkg/log"
@@ -184,7 +184,7 @@ func (d *Default) FindByAndCount(ctx context.Context, key string, value interfac
 
 	// Run in transaction
 	if err := Transaction(ctx, d.session, func() error {
-		n, err := d.session.Database(d.db).Collection(d.table).Count(ctx, bson.M{
+		n, err := d.session.Database(d.db).Collection(d.table).CountDocuments(ctx, bson.M{
 			key: value,
 		})
 		count = n
@@ -216,7 +216,7 @@ func (d *Default) WhereCount(ctx context.Context, filter interface{}) (int64, er
 
 	// Run in transaction
 	if err := Transaction(ctx, d.session, func() error {
-		n, err := d.session.Database(d.db).Collection(d.table).Count(ctx, filter)
+		n, err := d.session.Database(d.db).Collection(d.table).CountDocuments(ctx, filter)
 		count = n
 		return err
 	}); err != nil {

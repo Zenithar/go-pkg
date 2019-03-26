@@ -33,8 +33,6 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 	"github.com/jmoiron/sqlx/reflectx"
-	opentracing "github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/ext"
 	"github.com/pkg/errors"
 )
 
@@ -101,12 +99,6 @@ func (d *Default) Create(ctx context.Context, data interface{}) error {
 	q, args, err := query.ToSql()
 	if err != nil {
 		return errors.Wrap(err, "Database error")
-	}
-
-	// Instrument opentracing
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		ext.DBType.Set(span, "sql")
-		ext.DBStatement.Set(span, q)
 	}
 
 	// Prepare the statement
@@ -179,12 +171,6 @@ func (d *Default) WhereAndFetchOne(ctx context.Context, filter interface{}, resu
 		return errors.Wrap(err, "SQL error")
 	}
 
-	// Instrument opentracing
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		ext.DBType.Set(span, "sql")
-		ext.DBStatement.Set(span, q)
-	}
-
 	// Prepare the statement
 	stmt, err := d.session.PreparexContext(ctx, q)
 	if err != nil {
@@ -218,12 +204,6 @@ func (d *Default) Update(ctx context.Context, updates map[string]interface{}, fi
 	q, args, err := qb.ToSql()
 	if err != nil {
 		return errors.Wrap(err, "SQL error")
-	}
-
-	// Instrument opentracing
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		ext.DBType.Set(span, "sql")
-		ext.DBStatement.Set(span, q)
 	}
 
 	// Prepare the statement
@@ -268,12 +248,6 @@ func (d *Default) RemoveOne(ctx context.Context, filter interface{}) error {
 	q, args, err := qb.ToSql()
 	if err != nil {
 		return errors.Wrap(err, "SQL error")
-	}
-
-	// Instrument opentracing
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		ext.DBType.Set(span, "sql")
-		ext.DBStatement.Set(span, q)
 	}
 
 	// Prepare the statement

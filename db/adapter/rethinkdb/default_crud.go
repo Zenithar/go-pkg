@@ -75,12 +75,6 @@ func (d *Default) GetSession() interface{} {
 
 // Insert inserts a document into the database
 func (d *Default) Insert(ctx context.Context, data interface{}) error {
-	// Instrument opentracing
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		ext.DBType.Set(span, "rethink")
-		ext.DBInstance.Set(span, d.db)
-	}
-
 	_, err := r.Table(d.table).Insert(data).RunWrite(d.session, r.RunOpts{
 		Context: ctx,
 	})
@@ -96,12 +90,6 @@ func (d *Default) Insert(ctx context.Context, data interface{}) error {
 
 // InsertOrUpdate a document occording to ID presence in database
 func (d *Default) InsertOrUpdate(ctx context.Context, id interface{}, data interface{}) error {
-	// Instrument opentracing
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		ext.DBType.Set(span, "rethink")
-		ext.DBInstance.Set(span, d.db)
-	}
-
 	_, err := r.Table(d.table).Insert(data, r.InsertOpts{Conflict: "update"}).RunWrite(d.session, r.RunOpts{
 		Context: ctx,
 	})
@@ -117,12 +105,6 @@ func (d *Default) InsertOrUpdate(ctx context.Context, id interface{}, data inter
 
 // Find a document match given id
 func (d *Default) Find(ctx context.Context, id interface{}, value interface{}) error {
-	// Instrument opentracing
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		ext.DBType.Set(span, "rethink")
-		ext.DBInstance.Set(span, d.db)
-	}
-
 	cursor, err := r.Table(d.table).Get(id).Run(d.session, r.RunOpts{
 		Context: ctx,
 	})
@@ -142,12 +124,6 @@ func (d *Default) Find(ctx context.Context, id interface{}, value interface{}) e
 
 // FindOneBy a couple (k = v) in the database
 func (d *Default) FindOneBy(ctx context.Context, key string, value interface{}, result interface{}) error {
-	// Instrument opentracing
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		ext.DBType.Set(span, "rethink")
-		ext.DBInstance.Set(span, d.db)
-	}
-
 	cursor, err := r.Table(d.table).GetAllByIndex(key, value).Run(d.session, r.RunOpts{
 		Context: ctx,
 	})
@@ -167,12 +143,6 @@ func (d *Default) FindOneBy(ctx context.Context, key string, value interface{}, 
 
 // FindBy all couples (k = v) in the database
 func (d *Default) FindBy(ctx context.Context, key string, value interface{}, results interface{}) error {
-	// Instrument opentracing
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		ext.DBType.Set(span, "rethink")
-		ext.DBInstance.Set(span, d.db)
-	}
-
 	cursor, err := r.Table(d.table).Filter(func(row r.Term) r.Term {
 		return row.Field(key).Eq(value)
 	}).Run(d.session, r.RunOpts{
@@ -194,12 +164,6 @@ func (d *Default) FindBy(ctx context.Context, key string, value interface{}, res
 
 // FindByAndCount is used to count object that matchs the (key = value) predicate
 func (d *Default) FindByAndCount(ctx context.Context, key string, value interface{}) (int, error) {
-	// Instrument opentracing
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		ext.DBType.Set(span, "rethink")
-		ext.DBInstance.Set(span, d.db)
-	}
-
 	cursor, err := r.Table(d.table).Filter(func(row r.Term) r.Term {
 		return row.Field(key).Eq(value)
 	}).Count().Run(d.session, r.RunOpts{
@@ -222,12 +186,6 @@ func (d *Default) FindByAndCount(ctx context.Context, key string, value interfac
 
 // Where is used to fetch documents that match th filter from the database
 func (d *Default) Where(ctx context.Context, filter interface{}, results interface{}) error {
-	// Instrument opentracing
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		ext.DBType.Set(span, "rethink")
-		ext.DBInstance.Set(span, d.db)
-	}
-
 	cursor, err := r.Table(d.table).Filter(filter).Run(d.session, r.RunOpts{
 		Context: ctx,
 	})
@@ -247,12 +205,6 @@ func (d *Default) Where(ctx context.Context, filter interface{}, results interfa
 
 // WhereCount returns the document count that match the filter
 func (d *Default) WhereCount(ctx context.Context, filter interface{}) (int, error) {
-	// Instrument opentracing
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		ext.DBType.Set(span, "rethink")
-		ext.DBInstance.Set(span, d.db)
-	}
-
 	cursor, err := r.Table(d.table).Filter(filter).Count().Run(d.session, r.RunOpts{
 		Context: ctx,
 	})
@@ -273,12 +225,6 @@ func (d *Default) WhereCount(ctx context.Context, filter interface{}) (int, erro
 
 // WhereAndFetchOne returns one document that match the filter
 func (d *Default) WhereAndFetchOne(ctx context.Context, filter interface{}, result interface{}) error {
-	// Instrument opentracing
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		ext.DBType.Set(span, "rethink")
-		ext.DBInstance.Set(span, d.db)
-	}
-
 	cursor, err := r.Table(d.table).Filter(filter).Run(d.session, r.RunOpts{
 		Context: ctx,
 	})
@@ -298,12 +244,6 @@ func (d *Default) WhereAndFetchOne(ctx context.Context, filter interface{}, resu
 
 // WhereAndFetchLimit returns paginated list of document
 func (d *Default) WhereAndFetchLimit(ctx context.Context, filter interface{}, paginator *db.Pagination, results interface{}) error {
-	// Instrument opentracing
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		ext.DBType.Set(span, "rethink")
-		ext.DBInstance.Set(span, d.db)
-	}
-
 	cursor, err := r.Table(d.table).Filter(filter).Run(d.session, r.RunOpts{
 		Context: ctx,
 	})
@@ -323,12 +263,6 @@ func (d *Default) WhereAndFetchLimit(ctx context.Context, filter interface{}, pa
 
 // Update a document that match the selector
 func (d *Default) Update(ctx context.Context, selector interface{}, data interface{}) error {
-	// Instrument opentracing
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		ext.DBType.Set(span, "rethink")
-		ext.DBInstance.Set(span, d.db)
-	}
-
 	_, err := r.Table(d.table).Filter(selector).Update(data).RunWrite(d.session, r.RunOpts{
 		Context: ctx,
 	})
@@ -344,12 +278,6 @@ func (d *Default) Update(ctx context.Context, selector interface{}, data interfa
 
 // UpdateID updates a document using his id
 func (d *Default) UpdateID(ctx context.Context, id interface{}, data interface{}) error {
-	// Instrument opentracing
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		ext.DBType.Set(span, "rethink")
-		ext.DBInstance.Set(span, d.db)
-	}
-
 	_, err := r.Table(d.table).Get(id).Update(data).RunWrite(d.session, r.RunOpts{
 		Context: ctx,
 	})
@@ -365,12 +293,6 @@ func (d *Default) UpdateID(ctx context.Context, id interface{}, data interface{}
 
 // DeleteAll documents from the database
 func (d *Default) DeleteAll(ctx context.Context, pred interface{}) error {
-	// Instrument opentracing
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		ext.DBType.Set(span, "rethink")
-		ext.DBInstance.Set(span, d.db)
-	}
-
 	_, err := r.Table(d.table).Filter(pred).Delete().RunWrite(d.session, r.RunOpts{
 		Context: ctx,
 	})
@@ -386,12 +308,6 @@ func (d *Default) DeleteAll(ctx context.Context, pred interface{}) error {
 
 // Delete a document from the database
 func (d *Default) Delete(ctx context.Context, id interface{}) error {
-	// Instrument opentracing
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		ext.DBType.Set(span, "rethink")
-		ext.DBInstance.Set(span, d.db)
-	}
-
 	_, err := r.Table(d.table).Get(id).Delete().RunWrite(d.session, r.RunOpts{
 		Context: ctx,
 	})
@@ -407,23 +323,11 @@ func (d *Default) Delete(ctx context.Context, id interface{}) error {
 
 // List all entities from the database
 func (d *Default) List(ctx context.Context, results interface{}, sortParams *db.SortParameters, pagination *db.Pagination) error {
-	// Instrument opentracing
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		ext.DBType.Set(span, "rethink")
-		ext.DBInstance.Set(span, d.db)
-	}
-
 	return d.Search(ctx, results, nil, sortParams, pagination)
 }
 
 // Search all entities in the database
 func (d *Default) Search(ctx context.Context, results interface{}, filter interface{}, sortParams *db.SortParameters, pagination *db.Pagination) error {
-	// Instrument opentracing
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		ext.DBType.Set(span, "rethink")
-		ext.DBInstance.Set(span, d.db)
-	}
-
 	term := r.Table(d.table)
 
 	// Filter

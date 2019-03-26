@@ -27,8 +27,6 @@ import (
 
 	"go.zenithar.org/pkg/db"
 
-	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/ext"
 	"github.com/pkg/errors"
 	r "gopkg.in/rethinkdb/rethinkdb-go.v5"
 )

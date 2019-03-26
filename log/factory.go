@@ -44,7 +44,7 @@ func (b factory) Bg() Logger {
 	return &logger{logger: b.logger}
 }
 
-// For returns a context-aware Logger. 
+// For returns a context-aware Logger.
 // TODO: OpenCensus implementation
 func (b factory) For(ctx context.Context) Logger {
 	return b.Bg()

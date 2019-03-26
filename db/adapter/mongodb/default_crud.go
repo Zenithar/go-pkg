@@ -28,8 +28,6 @@ import (
 	"github.com/mongodb/mongo-go-driver/bson"
 	"github.com/mongodb/mongo-go-driver/mongo"
 	"github.com/mongodb/mongo-go-driver/mongo/options"
-	opentracing "github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/ext"
 	"github.com/pkg/errors"
 
 	"go.zenithar.org/pkg/db"
@@ -125,13 +123,6 @@ func (d *Default) DeleteAll(ctx context.Context, pred interface{}) error {
 
 // Delete deletes a resource with specified ID
 func (d *Default) Delete(ctx context.Context, id interface{}) error {
-	// Instrument opentracing
-	if span := opentracing.SpanFromContext(ctx); span != nil {
-		ext.DBType.Set(span, "mongo")
-		ext.DBInstance.Set(span, d.db)
-		ext.PeerHostname.Set(span, d.session.ConnectionString())
-	}
-
 	// Run in transaction
 	return Transaction(ctx, d.session, func() error {
 		_, err := d.session.Database(d.db).Collection(d.table).DeleteOne(ctx, id)

@@ -29,6 +29,7 @@ import (
 	"go.zenithar.org/pkg/log"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/opencensus-integrations/ocsql"
 	"github.com/pkg/errors"
 	try "gopkg.in/matryer/try.v1"
 )
@@ -56,8 +57,26 @@ func Connection(ctx context.Context, cfg *Configuration) (*sqlx.DB, error) {
 		connStr.User = cfg.Username
 		connStr.Password = cfg.Password
 
+		// Instrument with opentracing
+		driverName, err := ocsql.Register(
+			"postgres",
+			ocsql.WithOptions(ocsql.TraceOptions{
+				AllowRoot:    false,
+				Ping:         true,
+				RowsNext:     true,
+				RowsClose:    true,
+				RowsAffected: true,
+				LastInsertID: true,
+				Query:        true,
+				QueryParams:  false,
+			}),
+		)
+		if err != nil {
+			return false, errors.Wrap(err, "failed to register ocsql driver")
+		}
+
 		// Connect to database
-		conn, err = sqlx.Open("postgres", connStr.String())
+		conn, err = sqlx.Open(driverName, connStr.String())
 		if err != nil {
 			return attempt < 10, errors.Wrap(err, "PostgreSQL error : "+connStr.String())
 		}
@@ -77,7 +96,7 @@ func Connection(ctx context.Context, cfg *Configuration) (*sqlx.DB, error) {
 		return false, nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	// Return connection

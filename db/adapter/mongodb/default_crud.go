@@ -25,10 +25,10 @@ package mongodb
 import (
 	"context"
 
+	"github.com/mongodb/mongo-go-driver/bson"
+	"github.com/mongodb/mongo-go-driver/mongo/options"
+	mongowrapper "github.com/opencensus-integrations/gomongowrapper"
 	"github.com/pkg/errors"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"go.zenithar.org/pkg/db"
 	"go.zenithar.org/pkg/log"
@@ -38,11 +38,11 @@ import (
 type Default struct {
 	table   string
 	db      string
-	session *mongo.Client
+	session *mongowrapper.WrappedClient
 }
 
 // NewCRUDTable sets up a new Default struct
-func NewCRUDTable(session *mongo.Client, db, table string) *Default {
+func NewCRUDTable(session *mongowrapper.WrappedClient, db, table string) *Default {
 	return &Default{
 		db:      db,
 		table:   table,
@@ -318,7 +318,7 @@ func (d *Default) Search(ctx context.Context, results interface{}, filter interf
 type TransactionFunc func() error
 
 // Transaction runs the transactionfunc in a transaction
-func Transaction(ctx context.Context, client *mongo.Client, fn TransactionFunc) error {
+func Transaction(ctx context.Context, client *mongowrapper.WrappedClient, fn TransactionFunc) error {
 	// Initialize a session
 	session, err := client.StartSession()
 	if err != nil {

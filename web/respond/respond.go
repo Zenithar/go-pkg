@@ -18,11 +18,11 @@ func With(w http.ResponseWriter, r *http.Request, code int, data interface{}) {
 		return
 	}
 
-	// Write status
-	w.WriteHeader(code)
-
 	// Set content type header
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+
+	// Write status
+	w.WriteHeader(code)
 
 	// Write response
 	_, err = w.Write(js)

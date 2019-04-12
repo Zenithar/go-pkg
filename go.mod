@@ -16,22 +16,19 @@ require (
 	github.com/lib/pq v1.0.0
 	github.com/matryer/try v0.0.0-20161228173917-9ac251b645a2 // indirect
 	github.com/mongodb/mongo-go-driver v1.0.0
-	github.com/onsi/ginkgo v1.8.0 // indirect
-	github.com/onsi/gomega v1.5.0 // indirect
 	github.com/opencensus-integrations/gomongowrapper v0.0.1
 	github.com/opencensus-integrations/ocsql v0.1.4
 	github.com/pkg/errors v0.8.1
 	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.3.0
-	github.com/tidwall/pretty v0.0.0-20190325153808-1166b9ac2b65 // indirect
-	go.mongodb.org/mongo-driver v1.0.0 // indirect
-	go.opencensus.io v0.18.0
+	go.mongodb.org/mongo-driver v1.0.0
+	go.opencensus.io v0.20.2
 	go.uber.org/atomic v1.3.2 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
 	go.uber.org/zap v1.9.1
-	gopkg.in/airbrake/gobrake.v2 v2.0.9 // indirect
-	gopkg.in/gemnasium/logrus-airbrake-hook.v2 v2.1.2 // indirect
 	gopkg.in/matryer/try.v1 v1.0.0-20150601225556-312d2599e12e
 	gopkg.in/rethinkdb/rethinkdb-go.v5 v5.0.1
 )
+
+replace github.com/opencensus-integrations/gomongowrapper => github.com/Zenithar/gomongowrapper v0.0.2

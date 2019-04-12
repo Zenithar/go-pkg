@@ -29,6 +29,7 @@ import (
 	"go.zenithar.org/pkg/log"
 
 	mongowrapper "github.com/opencensus-integrations/gomongowrapper"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/zap"
 )
 
@@ -44,20 +45,13 @@ type Configuration struct {
 // Connection provides Wire provider for a MongoDB database connection
 func Connection(ctx context.Context, cfg *Configuration) (*mongowrapper.WrappedClient, error) {
 
-	log.For(ctx).Info("Trying to connect to MongoDB servers ... (30s timeout)")
+	log.For(ctx).Info("Trying to connect to MongoDB servers ...")
 
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
 	// Extract database name from connection string
-	client, err := mongowrapper.NewClient(cfg.ConnectionString)
-	if err != nil {
-		log.For(ctx).Error("Unable to initialize MongoDB client", zap.Error(err))
-		return nil, err
-	}
-
-	// Try to connect to database
-	err = client.Connect(ctx)
+	client, err := mongowrapper.Connect(ctx, options.Client().ApplyURI(cfg.ConnectionString))
 	if err != nil {
 		log.For(ctx).Error("Unable to connect to MongoDB", zap.Error(err))
 		return nil, err

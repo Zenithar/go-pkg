@@ -25,10 +25,10 @@ package mongodb
 import (
 	"context"
 
-	"github.com/mongodb/mongo-go-driver/bson"
-	"github.com/mongodb/mongo-go-driver/mongo/options"
 	mongowrapper "github.com/opencensus-integrations/gomongowrapper"
 	"github.com/pkg/errors"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"go.zenithar.org/pkg/db"
 	"go.zenithar.org/pkg/log"

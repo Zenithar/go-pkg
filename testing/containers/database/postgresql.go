@@ -1,11 +1,11 @@
 package database
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 
 	_ "github.com/lib/pq"
+	"github.com/jmoiron/sqlx"
 	"github.com/dchest/uniuri"
 	dockertest "gopkg.in/ory-am/dockertest.v3"
 
@@ -33,7 +33,7 @@ type PostgreSQLContainer struct {
 func NewPostgresContainer(pool *dockertest.Pool) *PostgreSQLContainer {
 
 	var (
-		db *sql.DB
+		db *sqlx.DB
 		databaseName = fmt.Sprintf("test-%s", uniuri.NewLen(8))
 		databaseUser = fmt.Sprintf("user-%s", uniuri.NewLen(8))
 		password = uniuri.NewLen(32)
@@ -60,7 +60,7 @@ func NewPostgresContainer(pool *dockertest.Pool) *PostgreSQLContainer {
 		var err error
 
 		// Try to connect using connection string
-		db, err = sql.Open("postgres", connectionString)
+		db, err = sqlx.Open("postgres", connectionString)
 		if err != nil {
 			return err
 		}
@@ -99,5 +99,6 @@ func (postgres *PostgreSQLContainer) Configuration() *postgresql.Configuration {
 
 // Stop the container
 func (postgres *PostgreSQLContainer) Stop() error {
+	log.Printf("Postgres (%v): shutting down", postgres.Name)
 	return postgres.pool.Purge(postgres.resource)
 }

@@ -35,7 +35,7 @@ func KillAll(ctx context.Context) {
 // -----------------------------------------------------------------------------
 
 // ConnectToPostgreSQL returns a PostgreSQL connection form a container or a running instance
-func ConnectToPostgreSQL(_ context.Context) (sqlx.DB, *Configuration, error) {
+func ConnectToPostgreSQL(_ context.Context) (*sqlx.DB, *Configuration, error) {
 
 	// Check environment variable first
 	if url := os.Getenv("TEST_DATABASE_POSTGRESQL"); url != "" {
@@ -43,14 +43,14 @@ func ConnectToPostgreSQL(_ context.Context) (sqlx.DB, *Configuration, error) {
 		// Check URL syntax
 		u, err := postgresql.ParseURL(url)
 		if err != nil {
-			return nil, errors.Wrap(err, "unable to parse PostgreSQL DSN")
+			return nil, nil, errors.Wrap(err, "unable to parse PostgreSQL DSN")
 		}
 
 		// Try to connect
 		log.Println("Found postgresql test database config, skipping dockertest...")
 		db, err := sqlx.Open("postgres", u.String())
 		if err != nil {
-			return nil, errors.Wrap(err, "unable to initialize PostgreSQL connection")
+			return nil, nil, errors.Wrap(err, "unable to initialize PostgreSQL connection")
 		}
 
 		// Return connection

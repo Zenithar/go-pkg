@@ -78,7 +78,7 @@ func ConnectToPostgreSQL(_ context.Context) (*sqlx.DB, *Configuration, error) {
 		var err error
 
 		// Try to connect using connection string
-		db, err = sqlx.Open("postgres", container.ConnectionString)
+		db, err = sqlx.Open("postgres", container.config.ConnectionString)
 		if err != nil {
 			return err
 		}

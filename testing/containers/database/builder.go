@@ -10,6 +10,7 @@ import (
 	mongowrapper "github.com/opencensus-integrations/gomongowrapper"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.zenithar.org/pkg/db/adapter/postgresql"
 	dockertest "gopkg.in/ory-am/dockertest.v3"
 )
 
@@ -34,24 +35,37 @@ func KillAll(ctx context.Context) {
 // -----------------------------------------------------------------------------
 
 // ConnectToPostgreSQL returns a PostgreSQL connection form a container or a running instance
-func ConnectToPostgreSQL(_ context.Context) (sqlx.DB, error) {
+func ConnectToPostgreSQL(_ context.Context) (sqlx.DB, *Configuration, error) {
 
 	// Check environment variable first
 	if url := os.Getenv("TEST_DATABASE_POSTGRESQL"); url != "" {
+
+		// Check URL syntax
+		u, err := postgresql.ParseURL(url)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to parse PostgreSQL DSN")
+		}
+
+		// Try to connect
 		log.Println("Found postgresql test database config, skipping dockertest...")
-		db, err := sqlx.Open("postgres", url)
+		db, err := sqlx.Open("postgres", u.String())
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to initialize PostgreSQL connection")
 		}
 
 		// Return connection
-		return db, nil
+		return db, &Configuration{
+			ConnectionString: u.String(),
+			DatabaseName:     u.Database,
+			DatabaseUser:     u.User,
+			Password:         u.Password,
+		}, nil
 	}
 
 	// Initialize a docker container
 	pool, err := dockertest.NewPool("")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// Build postgres container
@@ -79,7 +93,7 @@ func ConnectToPostgreSQL(_ context.Context) (sqlx.DB, error) {
 	log.Printf("Postgres (%v): up", container.Name)
 
 	// Return connection
-	return db, nil
+	return db, container.Configuration(), nil
 }
 
 // ConnectToMongoDB returns a MongoDB connection

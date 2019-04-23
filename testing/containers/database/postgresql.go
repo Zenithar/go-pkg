@@ -20,12 +20,9 @@ var (
 // PostgreSQLContainer represents database container handler
 type postgreSQLContainer struct {
 	Name             string
-	ConnectionString string
-	Password         string
-	DatabaseName     string
-	DatabaseUser     string
 	pool             *dockertest.Pool
 	resource         *dockertest.Resource
+	config 					 *Configuration
 }
 
 // NewPostgresContainer initialize a PostgreSQL server in a docker container
@@ -58,14 +55,16 @@ func newPostgresContainer(pool *dockertest.Pool) *postgreSQLContainer {
 
 	// Return container information
 	return &postgreSQLContainer{
-		Name:             containerName,
-		ConnectionString: connectionString,
-		Password:         password,
-		DatabaseName:     databaseName,
-		DatabaseUser:     databaseUser,
-		pool:             pool,
-		resource:         resource,
-	}
+			Name:     containerName,
+			pool:     pool,
+			resource: resource,
+			config: &Configuration{
+				ConnectionString: connectionString,
+				Password:         password,
+				DatabaseName:     databaseName,
+				DatabaseUser:     databaseUser,
+			}
+		}
 }
 
 // -------------------------------------------------------------------
@@ -74,4 +73,9 @@ func newPostgresContainer(pool *dockertest.Pool) *postgreSQLContainer {
 func (postgres *postgreSQLContainer) Close() error {
 	log.Printf("Postgres (%v): shutting down", postgres.Name)
 	return postgres.pool.Purge(postgres.resource)
+}
+
+// Configuration return database settings
+func (postgres *postgreSQLContainer) Configuration() *Configuration {
+	return postgres.config
 }

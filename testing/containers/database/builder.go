@@ -92,6 +92,9 @@ func ConnectToPostgreSQL(_ context.Context) (*sqlx.DB, *Configuration, error) {
 	// Everything is ready
 	log.Printf("Postgres (%v): up", container.Name)
 
+	// Add container to resources
+	resources = append(resources, container)
+
 	// Return connection
 	return db, container.Configuration(), nil
 }
@@ -140,6 +143,9 @@ func ConnectToMongoDB(ctx context.Context) (*mongowrapper.WrappedClient, error) 
 
 	// Everything is ready
 	log.Printf("MongoDB (%v): up", container.Name)
+
+	// Add container to resources
+	resources = append(resources, container)
 
 	// Return connection
 	return db, nil

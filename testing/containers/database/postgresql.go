@@ -3,7 +3,6 @@ package database
 import (
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/dchest/uniuri"
 	_ "github.com/lib/pq"
@@ -43,9 +42,6 @@ func newPostgresContainer(pool *dockertest.Pool) *postgreSQLContainer {
 	if err != nil {
 		log.Fatalf("Could not start resource: %s", err)
 	}
-
-	// Hard killing resource timeout
-	resource.Expire(15 * time.Minute)
 
 	// Prepare connection string
 	connectionString := fmt.Sprintf("postgres://%s:%s@localhost:%s/%s?sslmode=disable", databaseUser, password, resource.GetPort("5432/tcp"), databaseName)

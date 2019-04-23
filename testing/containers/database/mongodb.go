@@ -3,7 +3,6 @@ package database
 import (
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/dchest/uniuri"
 	dockertest "gopkg.in/ory-am/dockertest.v3"
@@ -45,9 +44,6 @@ func newMongoDBContainer(pool *dockertest.Pool) *mongoDBContainer {
 	if err != nil {
 		log.Fatalf("Could not start resource: %s", err)
 	}
-
-	// Hard killing resource timeout
-	resource.Expire(15 * time.Minute)
 
 	// Prepare connection string
 	connectionString := fmt.Sprintf("localhost:%s", resource.GetPort("27017/tcp"))

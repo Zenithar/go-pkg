@@ -3,7 +3,6 @@ package database
 import (
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/dchest/uniuri"
 	dockertest "gopkg.in/ory-am/dockertest.v3"
@@ -41,9 +40,6 @@ func newRethinkDBContainer(pool *dockertest.Pool) *rethinkDBContainer {
 	if err != nil {
 		log.Fatalf("Could not start resource: %s", err)
 	}
-
-	// Hard killing resource timeout
-	resource.Expire(15 * time.Minute)
 
 	// Retrieve container name
 	containerName := containers.GetName(resource)

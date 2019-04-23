@@ -6,19 +6,18 @@ import (
 	"time"
 
 	"github.com/dchest/uniuri"
-	_ "github.com/lib/pq"
 	dockertest "gopkg.in/ory-am/dockertest.v3"
 
 	"go.zenithar.org/pkg/testing/containers"
 )
 
 var (
-	// PostgreSQLVersion defines version to use
-	PostgreSQLVersion = "10"
+	// MongoDBVersion defines version to use
+	MongoDBVersion = "latest"
 )
 
 // PostgreSQLContainer represents database container handler
-type postgreSQLContainer struct {
+type mongoDBContainer struct {
 	Name             string
 	ConnectionString string
 	Password         string
@@ -29,7 +28,7 @@ type postgreSQLContainer struct {
 }
 
 // NewPostgresContainer initialize a PostgreSQL server in a docker container
-func newPostgresContainer(pool *dockertest.Pool) *postgreSQLContainer {
+func newMongoDBContainer(pool *dockertest.Pool) *mongoDBContainer {
 
 	var (
 		databaseName = fmt.Sprintf("test-%s", uniuri.NewLen(8))
@@ -38,10 +37,10 @@ func newPostgresContainer(pool *dockertest.Pool) *postgreSQLContainer {
 	)
 
 	// Initialize a PostgreSQL server
-	resource, err := pool.Run("postgres", PostgreSQLVersion, []string{
-		fmt.Sprintf("POSTGRES_PASSWORD=%s", password),
-		fmt.Sprintf("POSTGRES_DB=%s", databaseName),
-		fmt.Sprintf("POSTGRES_USER=%s", databaseUser),
+	resource, err := pool.Run("mongo", MongoDBVersion, []string{
+		fmt.Sprintf("MONGO_INITDB_ROOT_USERNAME=%s", databaseUser),
+		fmt.Sprintf("MONGO_INITDB_ROOT_PASSWORD=%s", password),
+		fmt.Sprintf("MONGO_INITDB_DATABASE=%s", databaseName),
 	})
 	if err != nil {
 		log.Fatalf("Could not start resource: %s", err)
@@ -51,13 +50,13 @@ func newPostgresContainer(pool *dockertest.Pool) *postgreSQLContainer {
 	resource.Expire(15 * time.Minute)
 
 	// Prepare connection string
-	connectionString := fmt.Sprintf("postgres://%s:%s@localhost:%s/%s?sslmode=disable", databaseUser, password, resource.GetPort("5432/tcp"), databaseName)
+	connectionString := fmt.Sprintf("localhost:%s", resource.GetPort("27017/tcp"))
 
 	// Retrieve container name
 	containerName := containers.GetName(resource)
 
 	// Return container information
-	return &postgreSQLContainer{
+	return &mongoDBContainer{
 		Name:             containerName,
 		ConnectionString: connectionString,
 		Password:         password,

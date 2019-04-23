@@ -6,19 +6,18 @@ import (
 	"time"
 
 	"github.com/dchest/uniuri"
-	_ "github.com/lib/pq"
 	dockertest "gopkg.in/ory-am/dockertest.v3"
 
 	"go.zenithar.org/pkg/testing/containers"
 )
 
 var (
-	// PostgreSQLVersion defines version to use
-	PostgreSQLVersion = "10"
+	// RethinkDBVersion defines version to use
+	RethinkDBVersion = "latest"
 )
 
-// PostgreSQLContainer represents database container handler
-type postgreSQLContainer struct {
+// rethinkDBContainer represents database container handler
+type rethinkDBContainer struct {
 	Name             string
 	ConnectionString string
 	Password         string
@@ -28,8 +27,8 @@ type postgreSQLContainer struct {
 	resource         *dockertest.Resource
 }
 
-// NewPostgresContainer initialize a PostgreSQL server in a docker container
-func newPostgresContainer(pool *dockertest.Pool) *postgreSQLContainer {
+// newRethinkDBContainer initialize a RethinkDB server in a docker container
+func newRethinkDBContainer(pool *dockertest.Pool) *rethinkDBContainer {
 
 	var (
 		databaseName = fmt.Sprintf("test-%s", uniuri.NewLen(8))
@@ -38,11 +37,7 @@ func newPostgresContainer(pool *dockertest.Pool) *postgreSQLContainer {
 	)
 
 	// Initialize a PostgreSQL server
-	resource, err := pool.Run("postgres", PostgreSQLVersion, []string{
-		fmt.Sprintf("POSTGRES_PASSWORD=%s", password),
-		fmt.Sprintf("POSTGRES_DB=%s", databaseName),
-		fmt.Sprintf("POSTGRES_USER=%s", databaseUser),
-	})
+	resource, err := pool.Run("rethinkdb", RethinkDBVersion, []string{""})
 	if err != nil {
 		log.Fatalf("Could not start resource: %s", err)
 	}
@@ -50,21 +45,17 @@ func newPostgresContainer(pool *dockertest.Pool) *postgreSQLContainer {
 	// Hard killing resource timeout
 	resource.Expire(15 * time.Minute)
 
-	// Prepare connection string
-	connectionString := fmt.Sprintf("postgres://%s:%s@localhost:%s/%s?sslmode=disable", databaseUser, password, resource.GetPort("5432/tcp"), databaseName)
-
 	// Retrieve container name
 	containerName := containers.GetName(resource)
 
 	// Return container information
-	return &postgreSQLContainer{
-		Name:             containerName,
-		ConnectionString: connectionString,
-		Password:         password,
-		DatabaseName:     databaseName,
-		DatabaseUser:     databaseUser,
-		pool:             pool,
-		resource:         resource,
+	return &rethinkDBContainer{
+		Name:         containerName,
+		Password:     password,
+		DatabaseName: databaseName,
+		DatabaseUser: databaseUser,
+		pool:         pool,
+		resource:     resource,
 	}
 }
 

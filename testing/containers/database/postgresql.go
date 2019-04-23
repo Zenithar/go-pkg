@@ -70,12 +70,12 @@ func newPostgresContainer(pool *dockertest.Pool) *postgreSQLContainer {
 // -------------------------------------------------------------------
 
 // Close the container
-func (postgres *postgreSQLContainer) Close() error {
-	log.Printf("Postgres (%v): shutting down", postgres.Name)
-	return postgres.pool.Purge(postgres.resource)
+func (container *postgreSQLContainer) Close() error {
+	log.Printf("Postgres (%v): shutting down", container.Name)
+	return container.pool.Purge(container.resource)
 }
 
 // Configuration return database settings
-func (postgres *postgreSQLContainer) Configuration() *Configuration {
-	return postgres.config
+func (container *postgreSQLContainer) Configuration() *Configuration {
+	return container.config
 }

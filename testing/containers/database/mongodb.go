@@ -70,7 +70,7 @@ func newMongoDBContainer(pool *dockertest.Pool) *mongoDBContainer {
 // -------------------------------------------------------------------
 
 // Close the container
-func (postgres *postgreSQLContainer) Close() error {
-	log.Printf("Postgres (%v): shutting down", postgres.Name)
-	return postgres.pool.Purge(postgres.resource)
+func (container *mongoDBContainer) Close() error {
+	log.Printf("Postgres (%v): shutting down", container.Name)
+	return container.pool.Purge(container.resource)
 }

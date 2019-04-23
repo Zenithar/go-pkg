@@ -62,7 +62,7 @@ func newRethinkDBContainer(pool *dockertest.Pool) *rethinkDBContainer {
 // -------------------------------------------------------------------
 
 // Close the container
-func (postgres *postgreSQLContainer) Close() error {
-	log.Printf("Postgres (%v): shutting down", postgres.Name)
-	return postgres.pool.Purge(postgres.resource)
+func (container *rethinkDBContainer) Close() error {
+	log.Printf("Postgres (%v): shutting down", container.Name)
+	return container.pool.Purge(container.resource)
 }

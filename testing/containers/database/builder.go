@@ -121,14 +121,14 @@ func ConnectToMongoDB(ctx context.Context) (*mongowrapper.WrappedClient, error) 
 	// Build mongo container
 	container := newMongoDBContainer(pool)
 
-	var db sqlx.DB
+	var db *mongowrapper.WrappedClient
 
 	// Wait for connection
 	if err = pool.Retry(func() error {
 		var err error
 
 		// Extract database name from connection string
-		_, err = mongowrapper.Connect(ctx, options.Client().ApplyURI(container.ConnectionString))
+		db, err = mongowrapper.Connect(ctx, options.Client().ApplyURI(container.ConnectionString))
 		if err != nil {
 			return errors.Wrap(err, "unable to connect to MongoDB")
 		}

@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/dchest/uniuri"
+	// Load driver if not already done
 	_ "github.com/lib/pq"
+
+	"github.com/dchest/uniuri"
 	dockertest "gopkg.in/ory-am/dockertest.v3"
 
 	"go.zenithar.org/pkg/testing/containers"

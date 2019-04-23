@@ -2,6 +2,8 @@ module go.zenithar.org/pkg/testing
 
 go 1.12
 
+replace github.com/opencensus-integrations/gomongowrapper => github.com/Zenithar/gomongowrapper v0.0.2
+
 require (
 	github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 // indirect
 	github.com/Microsoft/go-winio v0.4.12 // indirect
@@ -21,7 +23,6 @@ require (
 	github.com/ory/dockertest v3.3.4+incompatible // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/sirupsen/logrus v1.4.1 // indirect
-	github.com/tidwall/pretty v0.0.0-20190325153808-1166b9ac2b65 // indirect
 	go.mongodb.org/mongo-driver v1.0.1
 	go.uber.org/zap v1.9.1
 	go.zenithar.org/pkg/db/adapter/postgresql v0.0.1

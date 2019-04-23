@@ -29,7 +29,7 @@ func KillAll(ctx context.Context) {
 	}
 
 	// Clean the resource array
-	resources = []*dockertest.Resource{}
+	resources = []io.Closer{}
 }
 
 // -----------------------------------------------------------------------------
@@ -71,7 +71,7 @@ func ConnectToPostgreSQL(_ context.Context) (*sqlx.DB, *Configuration, error) {
 	// Build postgres container
 	container := newPostgresContainer(pool)
 
-	var db sqlx.DB
+	var db *sqlx.DB
 
 	// Wait for connection
 	if err = pool.Retry(func() error {

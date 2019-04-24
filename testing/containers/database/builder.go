@@ -6,6 +6,12 @@ import (
 	"log"
 	"os"
 
+	// Load postgresql drivers
+	_ "github.com/jackc/pgx"
+	_ "github.com/jackc/pgx/pgtype"
+	_ "github.com/jackc/pgx/stdlib"
+	_ "github.com/lib/pq"
+
 	"github.com/jmoiron/sqlx"
 	mongowrapper "github.com/opencensus-integrations/gomongowrapper"
 	"github.com/pkg/errors"
@@ -46,9 +52,20 @@ func ConnectToPostgreSQL(_ context.Context) (*sqlx.DB, *Configuration, error) {
 			return nil, nil, errors.Wrap(err, "unable to parse PostgreSQL DSN")
 		}
 
+		defaultDriver := "postgres"
+		// Check driver option presence
+		if drv, ok := u.Options["driver"]; ok {
+			switch drv {
+			case "postgres", "pgx":
+				defaultDriver = drv
+			default:
+				return nil, nil, errors.New("invalid 'driver' option value, 'postgres' or 'pgx' supported")
+			}
+		}
+
 		// Try to connect
 		log.Println("Found postgresql test database config, skipping dockertest...")
-		db, err := sqlx.Open("postgres", u.String())
+		db, err := sqlx.Open(defaultDriver, u.String())
 		if err != nil {
 			return nil, nil, errors.Wrap(err, "unable to initialize PostgreSQL connection")
 		}

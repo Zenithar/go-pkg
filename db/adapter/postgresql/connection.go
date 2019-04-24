@@ -26,6 +26,12 @@ import (
 	"context"
 	"time"
 
+	// Load postgresql drivers
+	_ "github.com/jackc/pgx"
+	_ "github.com/jackc/pgx/pgtype"
+	_ "github.com/jackc/pgx/stdlib"
+	_ "github.com/lib/pq"
+
 	"go.zenithar.org/pkg/log"
 
 	"github.com/jmoiron/sqlx"
@@ -53,13 +59,24 @@ func Connection(ctx context.Context, cfg *Configuration) (*sqlx.DB, error) {
 			return false, errors.Wrap(err, "PosgreSQL error")
 		}
 
+		defaultDriver := "postgres"
+		// Check driver option presence
+		if drv, ok := connStr.Options["driver"]; ok {
+			switch drv {
+			case "postgres", "pgx":
+				defaultDriver = drv
+			default:
+				return false, errors.New("invalid 'driver' option value, 'postgres' or 'pgx' supported")
+			}
+		}
+
 		// Overrides settings
 		connStr.User = cfg.Username
 		connStr.Password = cfg.Password
 
 		// Instrument with opentracing
 		driverName, err := ocsql.Register(
-			"postgres",
+			defaultDriver,
 			ocsql.WithOptions(ocsql.TraceOptions{
 				AllowRoot:    false,
 				Ping:         true,

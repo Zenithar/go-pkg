@@ -7,6 +7,7 @@ require (
 	contrib.go.opencensus.io/exporter/prometheus v0.1.0
 	github.com/cloudflare/tableflip v0.0.0-20190329062924-8392f1641731
 	github.com/dchest/uniuri v0.0.0-20160212164326-8902c56451e9
+	github.com/gogo/protobuf v1.2.0 // indirect
 	github.com/google/gops v0.3.6
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
 	github.com/oklog/run v1.0.0

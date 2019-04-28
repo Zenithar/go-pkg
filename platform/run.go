@@ -29,7 +29,7 @@ type Application struct {
 	Version         string
 	Revision        string
 	Instrumentation InstrumentationConfig
-	Builder         func(upg *tableflip.Upgrader, group run.Group)
+	Builder         func(upg *tableflip.Upgrader, group *run.Group)
 }
 
 // Run the dispatcher
@@ -115,7 +115,7 @@ func Run(ctx context.Context, app *Application) error {
 	}
 
 	// Initialize the component
-	app.Builder(upg, group)
+	app.Builder(upg, &group)
 
 	// Setup signal handler
 	{

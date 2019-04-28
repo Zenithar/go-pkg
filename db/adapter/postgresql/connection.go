@@ -24,6 +24,7 @@ package postgresql
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	// Load postgresql drivers
@@ -40,7 +41,12 @@ import (
 	try "gopkg.in/matryer/try.v1"
 )
 
-// Configuration repesents database connection configuration
+var (
+	once sync.Once
+	conn *sqlx.DB
+)
+
+// Configuration represents database connection configuration
 type Configuration struct {
 	AutoMigrate      bool
 	ConnectionString string
@@ -50,7 +56,7 @@ type Configuration struct {
 
 // Connection provides Wire provider for a PostgreSQL database connection
 func Connection(ctx context.Context, cfg *Configuration) (*sqlx.DB, error) {
-	var conn *sqlx.DB
+
 	err := try.Do(func(attempt int) (bool, error) {
 		var err error
 
@@ -115,6 +121,19 @@ func Connection(ctx context.Context, cfg *Configuration) (*sqlx.DB, error) {
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
+
+	once.Do(func() {
+		// Start statistic puller
+		dbstatsCloser := ocsql.RecordStats(conn.DB, 5*time.Second)
+
+		go func() {
+			select {
+			case <-ctx.Done():
+				dbstatsCloser()
+				log.SafeClose(conn, "Unable to close database connection")
+			}
+		}()
+	})
 
 	// Return connection
 	return conn, nil

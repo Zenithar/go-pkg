@@ -105,7 +105,7 @@ func Setup(ctx context.Context, opts *Options) {
 
 	// sentry support
 	if opts.SentryDSN != "" {
-		For(ctx).Info("Starting sentry collector", zap.String("dsn", opts.SentryDSN))
+		logger.Info("Starting sentry collector", zap.String("dsn", opts.SentryDSN))
 
 		cfg := zapsentry.Configuration{
 			Level: zapcore.ErrorLevel, //when to send message to sentry
@@ -123,7 +123,7 @@ func Setup(ctx context.Context, opts *Options) {
 
 		logger = zapsentry.AttachCoreToLogger(core, logger)
 	} else {
-		For(ctx).Info("Sentry collector disabled")
+		logger.Info("Sentry collector disabled")
 	}
 
 	// Prepare factory

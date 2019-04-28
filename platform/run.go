@@ -12,13 +12,37 @@ import (
 	"github.com/oklog/run"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
+
 	"go.zenithar.org/pkg/log"
+	"go.zenithar.org/pkg/platform/diagnostic"
+	"go.zenithar.org/pkg/platform/jaeger"
+	"go.zenithar.org/pkg/platform/prometheus"
 )
 
 // -----------------------------------------------------------------------------
 
 // Run the dispatcher
-func Run(ctx context.Context, instrumentNetwork string, instrumentListen string, r *http.ServeMux, builder func(upg *tableflip.Upgrader, group run.Group)) error {
+func Run(ctx context.Context, debug bool, conf InstrumentationConfig, builder func(upg *tableflip.Upgrader, group run.Group)) error {
+	// Preparing instrumentation
+	instrumentationRouter := http.NewServeMux()
+
+	// Register common features
+	if conf.Diagnostic.Enabled {
+		if err := diagnostic.Register(ctx, conf.Diagnostic.Config, instrumentationRouter); err != nil {
+			log.For(ctx).Fatal("Unable to register diagnostic instrumentation", zap.Error(err))
+		}
+	}
+	if conf.Prometheus.Enabled {
+		if err := prometheus.RegisterExporter(ctx, conf.Prometheus.Config, instrumentationRouter); err != nil {
+			log.For(ctx).Fatal("Unable to register prometheus instrumentation", zap.Error(err))
+		}
+	}
+	if conf.Jaeger.Enabled {
+		if err := jaeger.RegisterExporter(ctx, debug, conf.Jaeger.Config); err != nil {
+			log.For(ctx).Fatal("Unable to register jaeger instrumentation", zap.Error(err))
+		}
+	}
+
 	// Configure graceful restart
 	upg, err := tableflip.New(tableflip.Options{})
 	if err != nil {
@@ -39,13 +63,13 @@ func Run(ctx context.Context, instrumentNetwork string, instrumentListen string,
 
 	// Instrumentation server
 	{
-		ln, err := upg.Fds.Listen(instrumentNetwork, instrumentListen)
+		ln, err := upg.Fds.Listen(conf.Network, conf.Listen)
 		if err != nil {
 			return errors.Wrap(err, "Unable to start instrumentation server")
 		}
 
 		server := &http.Server{
-			Handler: r,
+			Handler: instrumentationRouter,
 		}
 
 		group.Add(

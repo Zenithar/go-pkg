@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/cloudflare/tableflip"
+	"github.com/dchest/uniuri"
 	"github.com/oklog/run"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -21,24 +22,48 @@ import (
 
 // -----------------------------------------------------------------------------
 
+// Application represents platform application
+type Application struct {
+	Debug           bool
+	Name            string
+	Version         string
+	Revision        string
+	Instrumentation InstrumentationConfig
+	Builder         func(upg *tableflip.Upgrader, group run.Group)
+}
+
 // Run the dispatcher
-func Run(ctx context.Context, debug bool, conf InstrumentationConfig, builder func(upg *tableflip.Upgrader, group run.Group)) error {
+func Run(ctx context.Context, app *Application) error {
+
+	// Generate an instance identifier
+	appID := uniuri.NewLen(64)
+
+	// Prepare logger
+	log.Setup(ctx, &log.Options{
+		Debug:     app.Debug,
+		AppName:   app.Name,
+		AppID:     appID,
+		Version:   app.Version,
+		Revision:  app.Revision,
+		SentryDSN: app.Instrumentation.Logs.SentryDSN,
+	})
+
 	// Preparing instrumentation
 	instrumentationRouter := http.NewServeMux()
 
 	// Register common features
-	if conf.Diagnostic.Enabled {
-		if err := diagnostic.Register(ctx, conf.Diagnostic.Config, instrumentationRouter); err != nil {
+	if app.Instrumentation.Diagnostic.Enabled {
+		if err := diagnostic.Register(ctx, app.Instrumentation.Diagnostic.Config, instrumentationRouter); err != nil {
 			log.For(ctx).Fatal("Unable to register diagnostic instrumentation", zap.Error(err))
 		}
 	}
-	if conf.Prometheus.Enabled {
-		if err := prometheus.RegisterExporter(ctx, conf.Prometheus.Config, instrumentationRouter); err != nil {
+	if app.Instrumentation.Prometheus.Enabled {
+		if err := prometheus.RegisterExporter(ctx, app.Instrumentation.Prometheus.Config, instrumentationRouter); err != nil {
 			log.For(ctx).Fatal("Unable to register prometheus instrumentation", zap.Error(err))
 		}
 	}
-	if conf.Jaeger.Enabled {
-		if err := jaeger.RegisterExporter(ctx, debug, conf.Jaeger.Config); err != nil {
+	if app.Instrumentation.Jaeger.Enabled {
+		if err := jaeger.RegisterExporter(ctx, app.Debug, app.Instrumentation.Jaeger.Config); err != nil {
 			log.For(ctx).Fatal("Unable to register jaeger instrumentation", zap.Error(err))
 		}
 	}
@@ -63,7 +88,7 @@ func Run(ctx context.Context, debug bool, conf InstrumentationConfig, builder fu
 
 	// Instrumentation server
 	{
-		ln, err := upg.Fds.Listen(conf.Network, conf.Listen)
+		ln, err := upg.Fds.Listen(app.Instrumentation.Network, app.Instrumentation.Listen)
 		if err != nil {
 			return errors.Wrap(err, "Unable to start instrumentation server")
 		}
@@ -90,7 +115,7 @@ func Run(ctx context.Context, debug bool, conf InstrumentationConfig, builder fu
 	}
 
 	// Initialize the component
-	builder(upg, group)
+	app.Builder(upg, group)
 
 	// Setup signal handler
 	{

@@ -68,6 +68,11 @@ func Connection(ctx context.Context, cfg *Configuration) (*sqlx.DB, error) {
 		defaultDriver := "postgres"
 		// Check driver option presence
 		if drv, ok := connStr.Options["driver"]; ok {
+
+			// Remove from connection string
+			delete(connStr.Options, "driver")
+
+			// Check usages
 			switch drv {
 			case "postgres", "pgx":
 				defaultDriver = drv

@@ -14,9 +14,9 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	mongowrapper "github.com/opencensus-integrations/gomongowrapper"
-	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.zenithar.org/pkg/db/adapter/postgresql"
+	"golang.org/x/xerrors"
 	dockertest "gopkg.in/ory-am/dockertest.v3"
 )
 
@@ -49,7 +49,7 @@ func ConnectToPostgreSQL(_ context.Context) (*sqlx.DB, *Configuration, error) {
 		// Check URL syntax
 		u, err := postgresql.ParseURL(url)
 		if err != nil {
-			return nil, nil, errors.Wrap(err, "unable to parse PostgreSQL DSN")
+			return nil, nil, xerrors.Errorf("testing: unable to parse PostgreSQL DSN: %w", err)
 		}
 
 		defaultDriver := "postgres"
@@ -59,7 +59,7 @@ func ConnectToPostgreSQL(_ context.Context) (*sqlx.DB, *Configuration, error) {
 			case "postgres", "pgx":
 				defaultDriver = drv
 			default:
-				return nil, nil, errors.New("invalid 'driver' option value, 'postgres' or 'pgx' supported")
+				return nil, nil, xerrors.New("testing: invalid 'driver' option value, 'postgres' or 'pgx' supported")
 			}
 		}
 
@@ -67,7 +67,7 @@ func ConnectToPostgreSQL(_ context.Context) (*sqlx.DB, *Configuration, error) {
 		log.Println("Found postgresql test database config, skipping dockertest...")
 		db, err := sqlx.Open(defaultDriver, u.String())
 		if err != nil {
-			return nil, nil, errors.Wrap(err, "unable to initialize PostgreSQL connection")
+			return nil, nil, xerrors.Errorf("testing: unable to connect to postgresql: %w", err)
 		}
 
 		// Return connection
@@ -82,7 +82,7 @@ func ConnectToPostgreSQL(_ context.Context) (*sqlx.DB, *Configuration, error) {
 	// Initialize a docker container
 	pool, err := dockertest.NewPool("")
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, xerrors.Errorf("testing: unable to initialize docker connection: %w", err)
 	}
 
 	// Build postgres container
@@ -97,7 +97,7 @@ func ConnectToPostgreSQL(_ context.Context) (*sqlx.DB, *Configuration, error) {
 		// Try to connect using connection string
 		db, err = sqlx.Open("postgres", container.config.ConnectionString)
 		if err != nil {
-			return err
+			return xerrors.Errorf("testing: unable to initialize postgresql driver: %w", err)
 		}
 
 		// Ping database
@@ -125,7 +125,7 @@ func ConnectToMongoDB(ctx context.Context) (*mongowrapper.WrappedClient, error) 
 		// Extract database name from connection string
 		client, err := mongowrapper.Connect(ctx, options.Client().ApplyURI(url))
 		if err != nil {
-			return nil, errors.Wrap(err, "unable to connect to MongoDB")
+			return nil, xerrors.Errorf("testing: unable to connect to mongodb: %w", err)
 		}
 
 		// Return connection
@@ -135,7 +135,7 @@ func ConnectToMongoDB(ctx context.Context) (*mongowrapper.WrappedClient, error) 
 	// Initialize a docker container
 	pool, err := dockertest.NewPool("")
 	if err != nil {
-		return nil, err
+		return nil, xerrors.Errorf("testing: unable to initialize docker connection: %w", err)
 	}
 
 	// Build mongo container
@@ -150,7 +150,7 @@ func ConnectToMongoDB(ctx context.Context) (*mongowrapper.WrappedClient, error) 
 		// Extract database name from connection string
 		db, err = mongowrapper.Connect(ctx, options.Client().ApplyURI(container.ConnectionString))
 		if err != nil {
-			return errors.Wrap(err, "unable to connect to MongoDB")
+			return xerrors.Errorf("testing: unable to connect to mongodb: %w", err)
 		}
 
 		return nil

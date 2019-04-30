@@ -28,6 +28,7 @@ require (
 	go.uber.org/zap v1.9.1
 	go.zenithar.org/pkg/db/adapter/postgresql v0.0.1
 	golang.org/x/sys v0.0.0-20190419153524-e8e3143a4f4a // indirect
+	golang.org/x/xerrors v0.0.0-20190410155217-1f06c39b4373
 	gopkg.in/ory-am/dockertest.v3 v3.3.4
 	gopkg.in/rethinkdb/rethinkdb-go.v5 v5.0.1
 	gotest.tools v2.2.0+incompatible // indirect

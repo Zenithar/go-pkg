@@ -16,4 +16,5 @@ require (
 	go.opencensus.io v0.21.0
 	go.uber.org/zap v1.9.1
 	go.zenithar.org/pkg/log v0.0.1
+	golang.org/x/xerrors v0.0.0-20190410155217-1f06c39b4373
 )

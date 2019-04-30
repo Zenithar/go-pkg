@@ -11,8 +11,8 @@ import (
 	"github.com/cloudflare/tableflip"
 	"github.com/dchest/uniuri"
 	"github.com/oklog/run"
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
+	"golang.org/x/xerrors"
 
 	"go.zenithar.org/pkg/log"
 	"go.zenithar.org/pkg/platform/diagnostic"
@@ -71,7 +71,7 @@ func Run(ctx context.Context, app *Application) error {
 	// Configure graceful restart
 	upg, err := tableflip.New(tableflip.Options{})
 	if err != nil {
-		return errors.Wrap(err, "Unable to register graceful restart handler")
+		return xerrors.Errorf("platform: unable to register graceful restart handler: %w", err)
 	}
 
 	// Do an upgrade on SIGHUP
@@ -90,7 +90,7 @@ func Run(ctx context.Context, app *Application) error {
 	{
 		ln, err := upg.Fds.Listen(app.Instrumentation.Network, app.Instrumentation.Listen)
 		if err != nil {
-			return errors.Wrap(err, "Unable to start instrumentation server")
+			return xerrors.Errorf("platform: unable to start instrumentation server: %w", err)
 		}
 
 		server := &http.Server{

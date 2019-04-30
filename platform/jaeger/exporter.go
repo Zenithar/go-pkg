@@ -4,13 +4,13 @@ import (
 	"context"
 
 	"contrib.go.opencensus.io/exporter/jaeger"
-	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	"go.zenithar.org/pkg/log"
+	"golang.org/x/xerrors"
 )
 
-// NewExporter creates a new, configured Jaeger exporter.
-func NewExporter(config Config) (*jaeger.Exporter, error) {
+// newExporter creates a new, configured Jaeger exporter.
+func newExporter(config Config) (*jaeger.Exporter, error) {
 	exporter, err := jaeger.NewExporter(jaeger.Options{
 		CollectorEndpoint: config.CollectorEndpoint,
 		AgentEndpoint:     config.AgentEndpoint,
@@ -24,16 +24,16 @@ func NewExporter(config Config) (*jaeger.Exporter, error) {
 		},
 	})
 
-	return exporter, errors.Wrap(err, "failed to create jaeger exporter")
+	return exporter, err
 }
 
 // RegisterExporter add jaeger as trace exporter
 func RegisterExporter(ctx context.Context, debug bool, conf Config) error {
 	// Start tracing
 
-	exporter, err := NewExporter(conf)
+	exporter, err := newExporter(conf)
 	if err != nil {
-		return errors.Wrap(err, "unable to register jaeger exporter")
+		return xerrors.Errorf("platform: failed to create jaeger exporter: %w", err)
 	}
 
 	trace.RegisterExporter(exporter)

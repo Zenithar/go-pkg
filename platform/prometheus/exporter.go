@@ -5,13 +5,13 @@ import (
 	"net/http"
 
 	"contrib.go.opencensus.io/exporter/prometheus"
-	"github.com/pkg/errors"
 	"go.opencensus.io/stats/view"
 	"go.zenithar.org/pkg/log"
+	"golang.org/x/xerrors"
 )
 
-// NewExporter creates a new, configured Prometheus exporter.
-func NewExporter(config Config) (*prometheus.Exporter, error) {
+// newExporter creates a new, configured Prometheus exporter.
+func newExporter(config Config) (*prometheus.Exporter, error) {
 	exporter, err := prometheus.NewExporter(prometheus.Options{
 		Namespace: config.Namespace,
 		OnError: func(err error) {
@@ -19,16 +19,16 @@ func NewExporter(config Config) (*prometheus.Exporter, error) {
 		},
 	})
 
-	return exporter, errors.Wrap(err, "failed to create prometheus exporter")
+	return exporter, err
 }
 
 // RegisterExporter adds prometheus exporter
 func RegisterExporter(ctx context.Context, conf Config, r *http.ServeMux) error {
 	// Start prometheus
 
-	exporter, err := NewExporter(conf)
+	exporter, err := newExporter(conf)
 	if err != nil {
-		return errors.Wrap(err, "unable to register prometheus handler")
+		return xerrors.Errorf("platform: unable to register prometheus exporter: %w", err)
 	}
 
 	// Add exporter

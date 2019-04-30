@@ -26,9 +26,9 @@ import (
 	"context"
 
 	mongowrapper "github.com/opencensus-integrations/gomongowrapper"
-	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/xerrors"
 
 	"go.zenithar.org/pkg/db"
 	"go.zenithar.org/pkg/log"
@@ -281,7 +281,7 @@ func (d *Default) Search(ctx context.Context, results interface{}, filter interf
 	if pagination != nil {
 		total, err := d.WhereCount(ctx, filter)
 		if err != nil {
-			return errors.Wrap(err, "Database error")
+			return xerrors.Errorf("mongodb: %w", err)
 		}
 		pagination.SetTotal(uint(total))
 	}
@@ -322,26 +322,26 @@ func Transaction(ctx context.Context, client *mongowrapper.WrappedClient, fn Tra
 	// Initialize a session
 	session, err := client.StartSession()
 	if err != nil {
-		return errors.Wrap(err, "Database error")
+		return xerrors.Errorf("mongodb: %w", err)
 	}
 	defer session.EndSession(ctx)
 
 	// Start transaction
 	if err := session.StartTransaction(); err != nil {
-		return errors.Wrap(err, "Database error")
+		return xerrors.Errorf("mongodb: %w", err)
 	}
 
 	// Run the closure
 	if err := fn(); err != nil {
 		log.CheckErrCtx(ctx, "Unable to abort transaction", session.AbortTransaction(ctx))
-		return err
+		return xerrors.Errorf("mongodb: %w", err)
 	}
 
 	// Commit the transaction
 	err = session.CommitTransaction(ctx)
 	if err != nil {
 		log.CheckErrCtx(ctx, "Unable to abort transaction", session.AbortTransaction(ctx))
-		return err
+		return xerrors.Errorf("mongodb: %w", err)
 	}
 
 	// No error

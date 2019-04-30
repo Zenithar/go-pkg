@@ -31,6 +31,7 @@ import (
 	mongowrapper "github.com/opencensus-integrations/gomongowrapper"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.uber.org/zap"
+	"golang.org/x/xerrors"
 )
 
 // Configuration repesents database connection configuration
@@ -54,7 +55,7 @@ func Connection(ctx context.Context, cfg *Configuration) (*mongowrapper.WrappedC
 	client, err := mongowrapper.Connect(ctx, options.Client().ApplyURI(cfg.ConnectionString))
 	if err != nil {
 		log.For(ctx).Error("Unable to connect to MongoDB", zap.Error(err))
-		return nil, err
+		return nil, xerrors.Errorf("mongodb: %w", err)
 	}
 
 	log.For(ctx).Info("Connected to MongoDB.")

@@ -22,13 +22,13 @@
 
 package db
 
-import "github.com/pkg/errors"
+import "golang.org/x/xerrors"
 
 var (
 	// ErrNoResult is raised when data query returns no result
-	ErrNoResult = errors.New("No result")
+	ErrNoResult = xerrors.New("No result")
 	// ErrTooManyResults is raised when data query returns too many results
-	ErrTooManyResults = errors.New("too many results returned")
+	ErrTooManyResults = xerrors.New("too many results returned")
 	// ErrNoModification is raised when updating an entity without any changes
-	ErrNoModification = errors.New("No changes made")
+	ErrNoModification = xerrors.New("No changes made")
 )

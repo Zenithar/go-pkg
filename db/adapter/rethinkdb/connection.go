@@ -25,7 +25,7 @@ package rethinkdb
 import (
 	"context"
 
-	"github.com/pkg/errors"
+	"golang.org/x/xerrors"
 
 	r "gopkg.in/rethinkdb/rethinkdb-go.v5"
 )
@@ -68,7 +68,7 @@ func Connection(ctx context.Context, cfg *Configuration) (*r.Session, error) {
 	// Initialize a new setup connection
 	conn, err := r.Connect(opts)
 	if err != nil {
-		return nil, errors.Wrap(err, "RethinkDB error")
+		return nil, xerrors.Errorf("rethinkdb: unable to connect to server: %w", err)
 	}
 
 	// Return connection

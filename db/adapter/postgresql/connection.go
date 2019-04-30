@@ -37,7 +37,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/opencensus-integrations/ocsql"
-	"github.com/pkg/errors"
+	"golang.org/x/xerrors"
 	try "gopkg.in/matryer/try.v1"
 )
 
@@ -62,7 +62,7 @@ func Connection(ctx context.Context, cfg *Configuration) (*sqlx.DB, error) {
 
 		connStr, err := ParseURL(cfg.ConnectionString)
 		if err != nil {
-			return false, errors.Wrap(err, "PosgreSQL error")
+			return false, xerrors.Errorf("postgresql: %w", err)
 		}
 
 		defaultDriver := "postgres"
@@ -77,7 +77,7 @@ func Connection(ctx context.Context, cfg *Configuration) (*sqlx.DB, error) {
 			case "postgres", "pgx":
 				defaultDriver = drv
 			default:
-				return false, errors.New("invalid 'driver' option value, 'postgres' or 'pgx' supported")
+				return false, xerrors.New("postgresql: invalid 'driver' option value, 'postgres' or 'pgx' supported")
 			}
 		}
 
@@ -100,18 +100,18 @@ func Connection(ctx context.Context, cfg *Configuration) (*sqlx.DB, error) {
 			}),
 		)
 		if err != nil {
-			return false, errors.Wrap(err, "failed to register ocsql driver")
+			return false, xerrors.Errorf("postgresql: failed to register ocsql driver: %w", err)
 		}
 
 		// Connect to database
 		conn, err = sqlx.Open(driverName, connStr.String())
 		if err != nil {
-			return attempt < 10, errors.Wrap(err, "PostgreSQL error : "+connStr.String())
+			return attempt < 10, xerrors.Errorf("postgresql: unable to open driver: %w", err)
 		}
 
 		// Check connection
 		if err = conn.Ping(); err != nil {
-			return attempt < 10, errors.Wrap(err, "PostgreSQL error : "+connStr.String())
+			return attempt < 10, xerrors.Errorf("postgresql: unable to ping database: %w", err)
 		}
 
 		// Update connection pool settings
@@ -124,7 +124,7 @@ func Connection(ctx context.Context, cfg *Configuration) (*sqlx.DB, error) {
 		return false, nil
 	})
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return nil, xerrors.Errorf("postgresql: unable to connect to database: %w", err)
 	}
 
 	once.Do(func() {

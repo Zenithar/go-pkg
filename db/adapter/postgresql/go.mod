@@ -18,6 +18,7 @@ require (
 	go.opencensus.io v0.20.2 // indirect
 	go.zenithar.org/pkg/db v0.0.2
 	go.zenithar.org/pkg/log v0.0.1
+	golang.org/x/xerrors v0.0.0-20190410155217-1f06c39b4373
 	google.golang.org/appengine v1.5.0 // indirect
 	gopkg.in/matryer/try.v1 v1.0.0-20150601225556-312d2599e12e
 )

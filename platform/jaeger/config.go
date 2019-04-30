@@ -6,11 +6,11 @@ import "github.com/pkg/errors"
 type Config struct {
 	// CollectorEndpoint is the Jaeger HTTP Thrift endpoint.
 	// For example, http://localhost:14268/api/traces?format=jaeger.thrift.
-	CollectorEndpoint string `toml:"collectorEndpoint" comment:"Jaeger collector endpoint"`
+	CollectorEndpoint string `toml:"collectorEndpoint" default:"http://localhost:14268/api/traces?format=jaeger.thrift" comment:"Jaeger collector endpoint"`
 
 	// AgentEndpoint instructs exporter to send spans to Jaeger agent at this address.
 	// For example, localhost:6831.
-	AgentEndpoint string `toml:"agentEndpoint" comment:"Jaeger agent endpoint"`
+	AgentEndpoint string `toml:"agentEndpoint" default:"localhost:6831" comment:"Jaeger agent endpoint"`
 
 	// Username to be used if basic auth is required.
 	// Optional.

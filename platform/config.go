@@ -4,6 +4,7 @@ import (
 	"go.zenithar.org/pkg/platform/diagnostic"
 	"go.zenithar.org/pkg/platform/jaeger"
 	"go.zenithar.org/pkg/platform/prometheus"
+	"go.zenithar.org/pkg/platform/ocagent"
 )
 
 // InstrumentationConfig holds all platform instrumentation settings
@@ -26,4 +27,8 @@ type InstrumentationConfig struct {
 		Enabled bool          `toml:"enabled" default:"true" comment:"Enable trace instrumentation"`
 		Config  jaeger.Config `toml:"Config" comment:"Jaeger settings"`
 	} `toml:"Jaeger" comment:"###############################\n Jaeger exporter \n##############################"`
+	OCAgent struct {
+		Enabled bool          `toml:"enabled" default:"true" comment:"Enable trace instrumentation"`
+		Config  ocagent.Config `toml:"Config" comment:"OpenCensus agent settings"`
+	} `toml:"Jaeger" comment:"###############################\n OpenCensus Agent exporter \n##############################"`
 }

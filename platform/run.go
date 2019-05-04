@@ -11,12 +11,14 @@ import (
 	"github.com/cloudflare/tableflip"
 	"github.com/dchest/uniuri"
 	"github.com/oklog/run"
+	"go.opencensus.io/trace"
 	"go.uber.org/zap"
 	"golang.org/x/xerrors"
 
 	"go.zenithar.org/pkg/log"
 	"go.zenithar.org/pkg/platform/diagnostic"
 	"go.zenithar.org/pkg/platform/jaeger"
+	"go.zenithar.org/pkg/platform/ocagent"
 	"go.zenithar.org/pkg/platform/prometheus"
 )
 
@@ -53,19 +55,30 @@ func Run(ctx context.Context, app *Application) error {
 
 	// Register common features
 	if app.Instrumentation.Diagnostic.Enabled {
-		if err := diagnostic.Register(ctx, app.Instrumentation.Diagnostic.Config, instrumentationRouter); err != nil {
+		err := diagnostic.Register(ctx, app.Instrumentation.Diagnostic.Config, instrumentationRouter)
+		if err != nil {
 			log.For(ctx).Fatal("Unable to register diagnostic instrumentation", zap.Error(err))
 		}
 	}
 	if app.Instrumentation.Prometheus.Enabled {
-		if err := prometheus.RegisterExporter(ctx, app.Instrumentation.Prometheus.Config, instrumentationRouter); err != nil {
+		if _, err := prometheus.RegisterExporter(ctx, app.Instrumentation.Prometheus.Config, instrumentationRouter); err != nil {
 			log.For(ctx).Fatal("Unable to register prometheus instrumentation", zap.Error(err))
 		}
 	}
 	if app.Instrumentation.Jaeger.Enabled {
-		if err := jaeger.RegisterExporter(ctx, app.Debug, app.Instrumentation.Jaeger.Config); err != nil {
+		if _, err := jaeger.RegisterExporter(ctx, app.Instrumentation.Jaeger.Config); err != nil {
 			log.For(ctx).Fatal("Unable to register jaeger instrumentation", zap.Error(err))
 		}
+	}
+	if app.Instrumentation.OCAgent.Enabled {
+		if _, err := ocagent.RegisterExporter(ctx, app.Instrumentation.OCAgent.Config); err != nil {
+			log.For(ctx).Fatal("Unable to register ocagent instrumentation", zap.Error(err))
+		}
+	}
+
+	// Trace everything when debugging is enabled
+	if app.Debug {
+		trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
 	}
 
 	// Configure graceful restart

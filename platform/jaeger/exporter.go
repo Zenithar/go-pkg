@@ -28,7 +28,7 @@ func newExporter(config Config) (*jaeger.Exporter, error) {
 }
 
 // RegisterExporter add jaeger as trace exporter
-func RegisterExporter(ctx context.Context, debug bool, conf Config) (func() error, error) {
+func RegisterExporter(ctx context.Context, conf Config) (func() error, error) {
 	// Start tracing
 
 	exporter, err := newExporter(conf)
@@ -37,11 +37,6 @@ func RegisterExporter(ctx context.Context, debug bool, conf Config) (func() erro
 	}
 
 	trace.RegisterExporter(exporter)
-
-	// Trace everything when debugging is enabled
-	if debug {
-		trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
-	}
 
 	// No error
 	return func() error {

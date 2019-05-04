@@ -23,12 +23,12 @@ func newExporter(config Config) (*prometheus.Exporter, error) {
 }
 
 // RegisterExporter adds prometheus exporter
-func RegisterExporter(ctx context.Context, conf Config, r *http.ServeMux) error {
+func RegisterExporter(ctx context.Context, conf Config, r *http.ServeMux) (func() error, error) {
 	// Start prometheus
 
 	exporter, err := newExporter(conf)
 	if err != nil {
-		return xerrors.Errorf("platform: unable to register prometheus exporter: %w", err)
+		return nil, xerrors.Errorf("platform: unable to register prometheus exporter: %w", err)
 	}
 
 	// Add exporter
@@ -38,5 +38,5 @@ func RegisterExporter(ctx context.Context, conf Config, r *http.ServeMux) error 
 	r.Handle("/metrics", exporter)
 
 	// No error
-	return nil
+	return nil, nil
 }

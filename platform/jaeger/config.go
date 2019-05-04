@@ -1,8 +1,8 @@
 package jaeger
 
-import "github.com/pkg/errors"
+import "golang.org/x/xerrors"
 
-// Config holds information necessary for sending trace to Jaeger.
+// Config holds information necessary for sending trace to jaeger.
 type Config struct {
 	// CollectorEndpoint is the Jaeger HTTP Thrift endpoint.
 	// For example, http://localhost:14268/api/traces?format=jaeger.thrift.
@@ -27,7 +27,10 @@ type Config struct {
 // Validate checks that the configuration is valid.
 func (c Config) Validate() error {
 	if c.CollectorEndpoint == "" && c.AgentEndpoint == "" {
-		return errors.New("either collector endpoint or agent endpoint must be configured")
+		return xerrors.New("jaeger: either collector endpoint or agent endpoint must be configured")
+	}
+	if c.ServiceName == "" {
+		return xerrors.New("jaeger: service name must not be blank")
 	}
 
 	return nil

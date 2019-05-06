@@ -1,9 +1,9 @@
 package respond
 
 import (
-	"encoding/json"
 	"net/http"
 
+	jsoniter "github.com/json-iterator/go"
 	"go.zenithar.org/pkg/log"
 )
 
@@ -11,6 +11,8 @@ import (
 
 // With serialize the data with matching requested encoding
 func With(w http.ResponseWriter, r *http.Request, code int, data interface{}) {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
 	// Marshal response as json
 	js, err := json.Marshal(data)
 	if err != nil {

@@ -48,6 +48,7 @@ func Run(ctx context.Context, app *Application) error {
 		Version:   app.Version,
 		Revision:  app.Revision,
 		SentryDSN: app.Instrumentation.Logs.SentryDSN,
+		LogLevel:  app.Instrumentation.Logs.Level,
 	})
 
 	// Preparing instrumentation

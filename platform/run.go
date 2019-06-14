@@ -68,13 +68,15 @@ func Run(ctx context.Context, app *Application) error {
 		}
 	}
 	if app.Instrumentation.Jaeger.Enabled {
-		if cancelFunc, err := jaeger.RegisterExporter(ctx, app.Instrumentation.Jaeger.Config); err != nil {
+		cancelFunc, err := jaeger.RegisterExporter(ctx, app.Instrumentation.Jaeger.Config)
+		if err != nil {
 			log.For(ctx).Fatal("Unable to register jaeger instrumentation", zap.Error(err))
 		}
 		defer cancelFunc()
 	}
 	if app.Instrumentation.OCAgent.Enabled {
-		if cancelFunc, err := ocagent.RegisterExporter(ctx, app.Instrumentation.OCAgent.Config); err != nil {
+		cancelFunc, err := ocagent.RegisterExporter(ctx, app.Instrumentation.OCAgent.Config)
+		if err != nil {
 			log.For(ctx).Fatal("Unable to register ocagent instrumentation", zap.Error(err))
 		}
 		defer cancelFunc()

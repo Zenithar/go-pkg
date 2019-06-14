@@ -8,6 +8,7 @@ import (
 	"github.com/google/gops/agent"
 	"go.uber.org/zap"
 
+	"go.opencensus.io/zpages"
 	"go.zenithar.org/pkg/log"
 )
 
@@ -39,6 +40,10 @@ func Register(ctx context.Context, conf Config, r *http.ServeMux) error {
 		r.Handle("/diag/heap", pprof.Handler("heap"))
 		r.Handle("/diag/threadcreate", pprof.Handler("threadcreate"))
 		r.Handle("/diag/block", pprof.Handler("block"))
+	}
+
+	if conf.ZPages.Enabled {
+		zpages.Handle(r, "/diag/zpages")
 	}
 
 	// No error

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"contrib.go.opencensus.io/exporter/prometheus"
+
 	"go.opencensus.io/stats/view"
 	"go.zenithar.org/pkg/log"
 	"golang.org/x/xerrors"

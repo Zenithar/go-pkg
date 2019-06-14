@@ -9,6 +9,9 @@ type Config struct {
 	PProf struct {
 		Enabled bool `toml:"enabled" default:"true" comment:"Enable PProf handler"`
 	}
+	ZPages struct {
+		Enabled bool `toml:"enabled" default:"true" comment:"Enable zPages handler"`
+	}
 }
 
 // Validate checks that the configuration is valid.

@@ -56,10 +56,11 @@ func Run(ctx context.Context, app *Application) error {
 
 	// Register common features
 	if app.Instrumentation.Diagnostic.Enabled {
-		err := diagnostic.Register(ctx, app.Instrumentation.Diagnostic.Config, instrumentationRouter)
+		cancelFunc, err := diagnostic.Register(ctx, app.Instrumentation.Diagnostic.Config, instrumentationRouter)
 		if err != nil {
 			log.For(ctx).Fatal("Unable to register diagnostic instrumentation", zap.Error(err))
 		}
+		defer cancelFunc()
 	}
 	if app.Instrumentation.Prometheus.Enabled {
 		if _, err := prometheus.RegisterExporter(ctx, app.Instrumentation.Prometheus.Config, instrumentationRouter); err != nil {
@@ -67,14 +68,16 @@ func Run(ctx context.Context, app *Application) error {
 		}
 	}
 	if app.Instrumentation.Jaeger.Enabled {
-		if _, err := jaeger.RegisterExporter(ctx, app.Instrumentation.Jaeger.Config); err != nil {
+		if cancelFunc, err := jaeger.RegisterExporter(ctx, app.Instrumentation.Jaeger.Config); err != nil {
 			log.For(ctx).Fatal("Unable to register jaeger instrumentation", zap.Error(err))
 		}
+		defer cancelFunc()
 	}
 	if app.Instrumentation.OCAgent.Enabled {
-		if _, err := ocagent.RegisterExporter(ctx, app.Instrumentation.OCAgent.Config); err != nil {
+		if cancelFunc, err := ocagent.RegisterExporter(ctx, app.Instrumentation.OCAgent.Config); err != nil {
 			log.For(ctx).Fatal("Unable to register ocagent instrumentation", zap.Error(err))
 		}
+		defer cancelFunc()
 	}
 
 	// Trace everything when debugging is enabled

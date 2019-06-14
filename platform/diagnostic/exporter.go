@@ -13,7 +13,7 @@ import (
 )
 
 // Register adds diagnostic tools to main process
-func Register(ctx context.Context, conf Config, r *http.ServeMux) error {
+func Register(ctx context.Context, conf Config, r *http.ServeMux) (func() error, error) {
 
 	if conf.GOPS.Enabled {
 		// Start diagnostic handler
@@ -31,21 +31,27 @@ func Register(ctx context.Context, conf Config, r *http.ServeMux) error {
 	}
 
 	if conf.PProf.Enabled {
-		r.HandleFunc("/diag/pprof", pprof.Index)
-		r.HandleFunc("/diag/cmdline", pprof.Cmdline)
-		r.HandleFunc("/diag/profile", pprof.Profile)
-		r.HandleFunc("/diag/symbol", pprof.Symbol)
-		r.HandleFunc("/diag/trace", pprof.Trace)
-		r.Handle("/diag/goroutine", pprof.Handler("goroutine"))
-		r.Handle("/diag/heap", pprof.Handler("heap"))
-		r.Handle("/diag/threadcreate", pprof.Handler("threadcreate"))
-		r.Handle("/diag/block", pprof.Handler("block"))
+		r.HandleFunc("/debug/pprof", pprof.Index)
+		r.HandleFunc("/debug/cmdline", pprof.Cmdline)
+		r.HandleFunc("/debug/profile", pprof.Profile)
+		r.HandleFunc("/debug/symbol", pprof.Symbol)
+		r.HandleFunc("/debug/trace", pprof.Trace)
+		r.Handle("/debug/goroutine", pprof.Handler("goroutine"))
+		r.Handle("/debug/heap", pprof.Handler("heap"))
+		r.Handle("/debug/threadcreate", pprof.Handler("threadcreate"))
+		r.Handle("/debug/block", pprof.Handler("block"))
 	}
 
 	if conf.ZPages.Enabled {
-		zpages.Handle(r, "/diag/zpages")
+		zpages.Handle(r, "/debug/zpages")
 	}
 
+	// Start monitor
+	stopMonitorReport := monitorProcess(20 * time.Second)
+
 	// No error
-	return nil
+	return func() error {
+		stopMonitorReport()
+		return nil
+	}, nil
 }

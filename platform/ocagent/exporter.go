@@ -55,7 +55,7 @@ func newExporter(config Config) (*ocagent.Exporter, error) {
 }
 
 // RegisterExporter add jaeger as trace exporter
-func RegisterExporter(ctx context.Context, conf Config) (func() error, error) {
+func RegisterExporter(ctx context.Context, conf Config) (func(), error) {
 	// Start tracing
 	exporter, err := newExporter(conf)
 	if err != nil {
@@ -67,11 +67,10 @@ func RegisterExporter(ctx context.Context, conf Config) (func() error, error) {
 	view.RegisterExporter(exporter)
 
 	// No error
-	return func() error {
+	return func() {
 		err := exporter.Stop()
 		if err != nil {
-			return xerrors.Errorf("platform: unable to stop ocagent exporter : %w", err)
+			panic(xerrors.Errorf("platform: unable to stop ocagent exporter : %w", err))
 		}
-		return nil
 	}, nil
 }

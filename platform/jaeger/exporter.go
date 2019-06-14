@@ -28,7 +28,7 @@ func newExporter(config Config) (*jaeger.Exporter, error) {
 }
 
 // RegisterExporter add jaeger as trace exporter
-func RegisterExporter(ctx context.Context, conf Config) (func() error, error) {
+func RegisterExporter(ctx context.Context, conf Config) (func(), error) {
 	// Start tracing
 
 	exporter, err := newExporter(conf)
@@ -39,8 +39,7 @@ func RegisterExporter(ctx context.Context, conf Config) (func() error, error) {
 	trace.RegisterExporter(exporter)
 
 	// No error
-	return func() error {
+	return func() {
 		exporter.Flush()
-		return nil
 	}, nil
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/pprof"
+	"time"
 
 	"github.com/google/gops/agent"
 	"go.uber.org/zap"
@@ -13,7 +14,7 @@ import (
 )
 
 // Register adds diagnostic tools to main process
-func Register(ctx context.Context, conf Config, r *http.ServeMux) (func() error, error) {
+func Register(ctx context.Context, conf Config, r *http.ServeMux) (func(), error) {
 
 	if conf.GOPS.Enabled {
 		// Start diagnostic handler
@@ -50,8 +51,7 @@ func Register(ctx context.Context, conf Config, r *http.ServeMux) (func() error,
 	stopMonitorReport := monitorProcess(20 * time.Second)
 
 	// No error
-	return func() error {
+	return func() {
 		stopMonitorReport()
-		return nil
 	}, nil
 }

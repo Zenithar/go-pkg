@@ -88,7 +88,7 @@ func Run(ctx context.Context, app *Application) error {
 			ID:       appID,
 			Version:  app.Version,
 			Revision: app.Revision,
-			Interval: app.Instrumentation.Runtime.Config.Interval,
+			IntervalStr: app.Instrumentation.Runtime.Config.IntervalStr,
 		}); err != nil {
 			log.For(ctx).Fatal("Unable to start runtime monitoring", zap.Error(err))
 		}

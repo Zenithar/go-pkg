@@ -20,6 +20,7 @@ import (
 	"go.zenithar.org/pkg/platform/jaeger"
 	"go.zenithar.org/pkg/platform/ocagent"
 	"go.zenithar.org/pkg/platform/prometheus"
+	"go.zenithar.org/pkg/platform/runtime"
 )
 
 // -----------------------------------------------------------------------------
@@ -80,6 +81,17 @@ func Run(ctx context.Context, app *Application) error {
 			log.For(ctx).Fatal("Unable to register ocagent instrumentation", zap.Error(err))
 		}
 		defer cancelFunc()
+	}
+	if app.Instrumentation.Runtime.Enabled {
+		if err := runtime.Monitor(ctx, runtime.Config{
+			Name:     app.Name,
+			ID:       appID,
+			Version:  app.Version,
+			Revision: app.Revision,
+			Interval: app.Instrumentation.Runtime.Config.Interval,
+		}); err != nil {
+			log.For(ctx).Fatal("Unable to start runtime monitoring", zap.Error(err))
+		}
 	}
 
 	// Trace everything when debugging is enabled

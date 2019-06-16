@@ -4,12 +4,10 @@ import (
 	"context"
 	"net/http"
 	"net/http/pprof"
-	"time"
 
 	"github.com/google/gops/agent"
-	"go.uber.org/zap"
-
 	"go.opencensus.io/zpages"
+	"go.uber.org/zap"
 	"go.zenithar.org/pkg/log"
 )
 
@@ -47,11 +45,6 @@ func Register(ctx context.Context, conf Config, r *http.ServeMux) (func(), error
 		zpages.Handle(r, "/debug/zpages")
 	}
 
-	// Start monitor
-	stopMonitorReport := monitorProcess(20 * time.Second)
-
 	// No error
-	return func() {
-		stopMonitorReport()
-	}, nil
+	return func() {}, nil
 }

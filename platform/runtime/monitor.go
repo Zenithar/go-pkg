@@ -8,7 +8,7 @@ import (
 // Monitor will start the runtime monitoring process to publish metrics
 func Monitor(ctx context.Context, cfg Config) error {
 
-	// Validate config 
+	// Validate config
 	if err := cfg.Validate(); err != nil {
 		return err
 	}

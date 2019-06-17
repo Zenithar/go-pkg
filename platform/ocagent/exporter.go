@@ -56,6 +56,11 @@ func newExporter(config Config) (*ocagent.Exporter, error) {
 
 // RegisterExporter add jaeger as trace exporter
 func RegisterExporter(ctx context.Context, conf Config) (func(), error) {
+	// Validate config first
+	if err := conf.Validate(); err != nil {
+		return nil, err
+	}
+
 	// Start tracing
 	exporter, err := newExporter(conf)
 	if err != nil {

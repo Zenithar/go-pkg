@@ -29,13 +29,18 @@ func newExporter(config Config) (*jaeger.Exporter, error) {
 
 // RegisterExporter add jaeger as trace exporter
 func RegisterExporter(ctx context.Context, conf Config) (func(), error) {
-	// Start tracing
+	// Validate config first
+	if err := conf.Validate(); err != nil {
+		return nil, err
+	}
 
+	// Initialize an exporter
 	exporter, err := newExporter(conf)
 	if err != nil {
 		return nil, xerrors.Errorf("platform: failed to create jaeger exporter: %w", err)
 	}
 
+	// Register it
 	trace.RegisterExporter(exporter)
 
 	// No error

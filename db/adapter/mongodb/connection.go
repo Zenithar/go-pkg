@@ -58,6 +58,13 @@ func Connection(ctx context.Context, cfg *Configuration) (*mongowrapper.WrappedC
 		return nil, xerrors.Errorf("mongodb: %w", err)
 	}
 
+	// Check connection
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		log.For(ctx).Error("Unable to ping MongoDB database", zap.Error(err))
+		return nil, xerrors.Errorf("mongodb: %w", err)
+	}
+
 	log.For(ctx).Info("Connected to MongoDB.")
 
 	// Return session

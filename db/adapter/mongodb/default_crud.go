@@ -85,10 +85,10 @@ func (d *Default) Insert(ctx context.Context, data interface{}) error {
 }
 
 // InsertOrUpdate inserts or update document if exists
-func (d *Default) InsertOrUpdate(ctx context.Context, id interface{}, data interface{}) error {
+func (d *Default) InsertOrUpdate(ctx context.Context, filter interface{}, data interface{}) error {
 	// Run in transaction
 	return Transaction(ctx, d.session, func() error {
-		_, err := d.session.Database(d.db).Collection(d.table).UpdateOne(ctx, id, data)
+		_, err := d.session.Database(d.db).Collection(d.table).UpdateOne(ctx, filter, bson.M{"$set": data}, options.Update().SetUpsert(true))
 		return err
 	})
 }

@@ -25,8 +25,8 @@ import (
 
 // -----------------------------------------------------------------------------
 
-// Application represents platform application
-type Application struct {
+// Server represents platform server
+type Server struct {
 	Debug           bool
 	Name            string
 	Version         string
@@ -35,67 +35,74 @@ type Application struct {
 	Builder         func(upg *tableflip.Upgrader, group *run.Group)
 }
 
-// Run the dispatcher
-func Run(ctx context.Context, app *Application) error {
+// Serve starts the server listening process
+func Serve(ctx context.Context, srv *Server) error {
 
 	// Generate an instance identifier
 	appID := uniuri.NewLen(64)
 
 	// Prepare logger
 	log.Setup(ctx, &log.Options{
-		Debug:     app.Debug,
-		AppName:   app.Name,
+		Debug:     srv.Debug,
+		AppName:   srv.Name,
 		AppID:     appID,
-		Version:   app.Version,
-		Revision:  app.Revision,
-		SentryDSN: app.Instrumentation.Logs.SentryDSN,
-		LogLevel:  app.Instrumentation.Logs.Level,
+		Version:   srv.Version,
+		Revision:  srv.Revision,
+		SentryDSN: srv.Instrumentation.Logs.SentryDSN,
+		LogLevel:  srv.Instrumentation.Logs.Level,
 	})
 
 	// Preparing instrumentation
 	instrumentationRouter := http.NewServeMux()
 
 	// Register common features
-	if app.Instrumentation.Diagnostic.Enabled {
-		cancelFunc, err := diagnostic.Register(ctx, app.Instrumentation.Diagnostic.Config, instrumentationRouter)
+	if srv.Instrumentation.Diagnostic.Enabled {
+		cancelFunc, err := diagnostic.Register(ctx, srv.Instrumentation.Diagnostic.Config, instrumentationRouter)
 		if err != nil {
 			log.For(ctx).Fatal("Unable to register diagnostic instrumentation", zap.Error(err))
 		}
 		defer cancelFunc()
 	}
-	if app.Instrumentation.Prometheus.Enabled {
-		if _, err := prometheus.RegisterExporter(ctx, app.Instrumentation.Prometheus.Config, instrumentationRouter); err != nil {
+	if srv.Instrumentation.Prometheus.Enabled {
+		if _, err := prometheus.RegisterExporter(ctx, srv.Instrumentation.Prometheus.Config, instrumentationRouter); err != nil {
 			log.For(ctx).Fatal("Unable to register prometheus instrumentation", zap.Error(err))
 		}
 	}
-	if app.Instrumentation.Jaeger.Enabled {
-		cancelFunc, err := jaeger.RegisterExporter(ctx, app.Instrumentation.Jaeger.Config)
+	if srv.Instrumentation.Jaeger.Enabled {
+		// Apply default service name in empty
+		if srv.Instrumentation.Jaeger.Config.ServiceName == "" {
+			log.For(ctx).Debug("No Jaeger service name given, applying server name as service name", zap.String("name", srv.Name))
+			srv.Instrumentation.Jaeger.Config.ServiceName = srv.Name
+		}
+
+		// Register exporter
+		cancelFunc, err := jaeger.RegisterExporter(ctx, srv.Instrumentation.Jaeger.Config)
 		if err != nil {
 			log.For(ctx).Fatal("Unable to register jaeger instrumentation", zap.Error(err))
 		}
 		defer cancelFunc()
 	}
-	if app.Instrumentation.OCAgent.Enabled {
-		cancelFunc, err := ocagent.RegisterExporter(ctx, app.Instrumentation.OCAgent.Config)
+	if srv.Instrumentation.OCAgent.Enabled {
+		cancelFunc, err := ocagent.RegisterExporter(ctx, srv.Instrumentation.OCAgent.Config)
 		if err != nil {
 			log.For(ctx).Fatal("Unable to register ocagent instrumentation", zap.Error(err))
 		}
 		defer cancelFunc()
 	}
-	if app.Instrumentation.Runtime.Enabled {
+	if srv.Instrumentation.Runtime.Enabled {
 		if err := runtime.Monitor(ctx, runtime.Config{
-			Name:     app.Name,
+			Name:     srv.Name,
 			ID:       appID,
-			Version:  app.Version,
-			Revision: app.Revision,
-			Interval: app.Instrumentation.Runtime.Config.Interval,
+			Version:  srv.Version,
+			Revision: srv.Revision,
+			Interval: srv.Instrumentation.Runtime.Config.Interval,
 		}); err != nil {
 			log.For(ctx).Fatal("Unable to start runtime monitoring", zap.Error(err))
 		}
 	}
 
 	// Trace everything when debugging is enabled
-	if app.Debug {
+	if srv.Debug {
 		trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
 	}
 
@@ -119,7 +126,7 @@ func Run(ctx context.Context, app *Application) error {
 
 	// Instrumentation server
 	{
-		ln, err := upg.Fds.Listen(app.Instrumentation.Network, app.Instrumentation.Listen)
+		ln, err := upg.Fds.Listen(srv.Instrumentation.Network, srv.Instrumentation.Listen)
 		if err != nil {
 			return xerrors.Errorf("platform: unable to start instrumentation server: %w", err)
 		}
@@ -146,7 +153,7 @@ func Run(ctx context.Context, app *Application) error {
 	}
 
 	// Initialize the component
-	app.Builder(upg, &group)
+	srv.Builder(upg, &group)
 
 	// Setup signal handler
 	{

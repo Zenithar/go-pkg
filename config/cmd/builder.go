@@ -33,7 +33,7 @@ func NewConfigCommand(conf interface{}, envPrefix string) *cobra.Command {
 		Short: "Initialize a default configuration",
 		Run: func(cmd *cobra.Command, args []string) {
 			defaults.SetDefaults(conf)
-	
+
 			if !configNewAsEnvFlag {
 				btes, err := toml.Marshal(conf)
 				if err != nil {
@@ -43,11 +43,11 @@ func NewConfigCommand(conf interface{}, envPrefix string) *cobra.Command {
 			} else {
 				m := flags.AsEnvVariables(conf, upPrefix, true)
 				keys := []string{}
-	
+
 				for k := range m {
 					keys = append(keys, k)
 				}
-	
+
 				sort.Strings(keys)
 				for _, k := range keys {
 					fmt.Printf("export %s=\"%s\"\n", k, m[k])

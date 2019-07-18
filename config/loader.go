@@ -30,8 +30,7 @@ func Load(conf interface{}, envPrefix string, cfgFile string) error {
 	}
 
 	// Apply file settings
-	switch {
-	case cfgFile != "":
+	if cfgFile != "" {
 		// If the config file doesn't exists, let's exit
 		if _, err := os.Stat(cfgFile); os.IsNotExist(err) {
 			return xerrors.Errorf("Unable to open non-existing file '%s': %w", cfgFile, err)

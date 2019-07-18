@@ -6,7 +6,7 @@ require (
 	contrib.go.opencensus.io/exporter/jaeger v0.1.0
 	contrib.go.opencensus.io/exporter/ocagent v0.5.0
 	contrib.go.opencensus.io/exporter/prometheus v0.1.0
-	github.com/cloudflare/tableflip v0.0.0-20190521150731-8ccd7b4aff9e
+	github.com/cloudflare/tableflip v1.0.0
 	github.com/dchest/uniuri v0.0.0-20160212164326-8902c56451e9
 	github.com/gogo/protobuf v1.2.0 // indirect
 	github.com/google/gops v0.3.6
@@ -16,6 +16,6 @@ require (
 	go.uber.org/zap v1.10.0
 	go.zenithar.org/pkg/log v0.0.3
 	go.zenithar.org/pkg/tlsconfig v0.0.1
-	golang.org/x/xerrors v0.0.0-20190513163551-3ee3066db522
-	google.golang.org/grpc v1.21.1
+	golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
+	google.golang.org/grpc v1.22.0
 )

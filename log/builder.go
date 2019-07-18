@@ -88,7 +88,7 @@ func Setup(ctx context.Context, opts *Options) {
 
 	// Build real logger
 	logger, err := config.Build(
-		zap.AddCallerSkip(1),
+		zap.AddCallerSkip(2),
 	)
 	if err != nil {
 		panic(err)

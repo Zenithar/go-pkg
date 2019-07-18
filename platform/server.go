@@ -89,6 +89,7 @@ func Serve(ctx context.Context, srv *Server) error {
 		}
 		defer cancelFunc()
 	}
+
 	if srv.Instrumentation.Runtime.Enabled {
 		if err := runtime.Monitor(ctx, runtime.Config{
 			Name:     srv.Name,

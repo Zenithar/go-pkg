@@ -12,7 +12,7 @@ type Config struct {
 	ID       string        `toml:"-"`
 	Version  string        `toml:"-"`
 	Revision string        `toml:"-"`
-	Interval time.Duration `toml:"interval" default:"20s" comment:"Refresh interval for runtime metrics update"`
+	Interval time.Duration `toml:"interval" default:"1m" comment:"Refresh interval for runtime metrics update"`
 }
 
 // Validate rntime config parameters

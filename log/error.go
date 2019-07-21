@@ -19,30 +19,36 @@ import (
 	"io"
 
 	"github.com/pkg/errors"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 // CheckErr handles error correctly
-func CheckErr(msg string, err error, fields ...zapcore.Field) {
+func CheckErr(msg string, err error, fields ...Field) {
 	if err != nil {
-		fields = append(fields, zap.Error(err))
-		defaultFactory.Bg().Error(msg, fields...)
+		fields = append(fields, Error(err))
+		DefaultFactory().Bg().Error(msg, fields...)
 	}
 }
 
 // CheckErrCtx handles error correctly
-func CheckErrCtx(ctx context.Context, msg string, err error, fields ...zapcore.Field) {
+func CheckErrCtx(ctx context.Context, msg string, err error, fields ...Field) {
 	if err != nil {
-		fields = append(fields, zap.Error(errors.WithStack(err)))
-		defaultFactory.For(ctx).Error(msg, fields...)
+		fields = append(fields, Error(errors.WithStack(err)))
+		DefaultFactory().For(ctx).Error(msg, fields...)
 	}
 }
 
 // SafeClose handles the closer error
-func SafeClose(c io.Closer, msg string, fields ...zapcore.Field) {
+func SafeClose(c io.Closer, msg string, fields ...Field) {
 	if cerr := c.Close(); cerr != nil {
-		fields = append(fields, zap.Error(errors.WithStack(cerr)))
-		defaultFactory.Bg().Error(msg, fields...)
+		fields = append(fields, Error(errors.WithStack(cerr)))
+		DefaultFactory().Bg().Error(msg, fields...)
+	}
+}
+
+// SafeCloseCtx handles the closer error
+func SafeCloseCtx(ctx context.Context, c io.Closer, msg string, fields ...Field) {
+	if cerr := c.Close(); cerr != nil {
+		fields = append(fields, Error(errors.WithStack(cerr)))
+		DefaultFactory().For(ctx).Error(msg, fields...)
 	}
 }

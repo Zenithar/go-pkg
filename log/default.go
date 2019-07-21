@@ -16,26 +16,17 @@ package log
 
 import (
 	"context"
-	l "log"
-
-	"go.uber.org/zap"
 )
 
 var defaultFactory LoggerFactory
 
 // -----------------------------------------------------------------------------
 
-func init() {
-	defaultLogger, err := zap.NewProduction()
-	if err != nil {
-		l.Fatalln(err)
-	}
-
-	defaultFactory = NewFactory(defaultLogger)
-}
-
 // SetLogger defines the default package logger
 func SetLogger(instance LoggerFactory) {
+	if defaultFactory != nil {
+		defaultFactory.Bg().Debug("Replacing logger factory", String("old", defaultFactory.Name()), String("new", instance.Name()))
+	}
 	defaultFactory = instance
 }
 
@@ -43,15 +34,24 @@ func SetLogger(instance LoggerFactory) {
 
 // Bg delegates a no-context logger
 func Bg() Logger {
-	return defaultFactory.Bg()
+	return checkFactory(defaultFactory).Bg()
 }
 
 // For delegates a context logger
 func For(ctx context.Context) Logger {
-	return defaultFactory.For(ctx)
+	return checkFactory(defaultFactory).For(ctx)
 }
 
-// Default returns the logger factory
-func Default() LoggerFactory {
+// DefaultFactory returns the logger factory
+func DefaultFactory() LoggerFactory {
+	return checkFactory(defaultFactory)
+}
+
+// -----------------------------------------------------------------------------
+
+func checkFactory(defaultFactory LoggerFactory) LoggerFactory {
+	if defaultFactory == nil {
+		panic("Unable to create logger instance, you have to register an adapter first.")
+	}
 	return defaultFactory
 }

@@ -20,49 +20,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package log
+package zap
 
 import (
 	"context"
+
+	"go.zenithar.org/pkg/log"
 
 	"github.com/TheZeroSlave/zapsentry"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-// Options declares logger options for builder
-type Options struct {
-	Debug     bool
-	LogLevel  string
-	AppName   string
-	AppID     string
-	Version   string
-	Revision  string
-	SentryDSN string
-}
-
-// -----------------------------------------------------------------------------
-
-// DefaultOptions defines default logger options
-var DefaultOptions = &Options{
-	Debug:     false,
-	LogLevel:  "info",
-	AppName:   "changeme",
-	AppID:     "changeme",
-	Version:   "0.0.1",
-	Revision:  "123456789",
-	SentryDSN: "",
-}
-
 // -----------------------------------------------------------------------------
 
 // Setup the logger
-func Setup(ctx context.Context, opts *Options) {
-
-	// Check nill arguments
-	if opts == nil {
-		opts = DefaultOptions
-	}
+func Setup(ctx context.Context, opts log.Options) {
 
 	// Initialize logs
 	var config zap.Config
@@ -118,7 +91,7 @@ func Setup(ctx context.Context, opts *Options) {
 		}
 		core, err := zapsentry.NewCore(cfg, zapsentry.NewSentryClientFromDSN(opts.SentryDSN))
 		if err != nil {
-			For(ctx).Warn("Unable to attach sentry to logger", zap.Error(err))
+			log.For(ctx).Warn("Unable to attach sentry to logger", log.Error(err))
 		}
 
 		logger = zapsentry.AttachCoreToLogger(core, logger)
@@ -130,7 +103,7 @@ func Setup(ctx context.Context, opts *Options) {
 	logFactory := NewFactory(logger)
 
 	// Override the global factory
-	SetLogger(logFactory)
+	log.SetLogger(logFactory)
 
 	// Override zap default logger
 	zap.ReplaceGlobals(logger)

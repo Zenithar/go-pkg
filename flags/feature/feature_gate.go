@@ -25,7 +25,6 @@ import (
 	"sync/atomic"
 
 	"github.com/spf13/pflag"
-	"go.uber.org/zap"
 
 	"go.zenithar.org/pkg/log"
 )
@@ -232,8 +231,6 @@ func (f *featureGate) SetFromMap(m map[string]bool) error {
 	// Persist changes
 	f.known.Store(known)
 	f.enabled.Store(enabled)
-
-	log.Bg().Info("feature gates", zap.Any("gates", f.enabled))
 
 	return nil
 }

@@ -29,7 +29,7 @@ func RegisterExporter(ctx context.Context, conf Config, r *http.ServeMux) (func(
 	if err := conf.Validate(); err != nil {
 		return nil, err
 	}
-	
+
 	exporter, err := newExporter(conf)
 	if err != nil {
 		return nil, xerrors.Errorf("platform: unable to register prometheus exporter: %w", err)

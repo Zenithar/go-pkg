@@ -12,10 +12,10 @@ import (
 	"github.com/dchest/uniuri"
 	"github.com/oklog/run"
 	"go.opencensus.io/trace"
-	"go.uber.org/zap"
 	"golang.org/x/xerrors"
 
 	"go.zenithar.org/pkg/log"
+	"go.zenithar.org/pkg/log/zap"
 	"go.zenithar.org/pkg/platform/diagnostic"
 	"go.zenithar.org/pkg/platform/jaeger"
 	"go.zenithar.org/pkg/platform/ocagent"
@@ -42,7 +42,7 @@ func Serve(ctx context.Context, srv *Server) error {
 	appID := uniuri.NewLen(64)
 
 	// Prepare logger
-	log.Setup(ctx, &log.Options{
+	zap.Setup(ctx, log.Options{
 		Debug:     srv.Debug,
 		AppName:   srv.Name,
 		AppID:     appID,
@@ -59,33 +59,33 @@ func Serve(ctx context.Context, srv *Server) error {
 	if srv.Instrumentation.Diagnostic.Enabled {
 		cancelFunc, err := diagnostic.Register(ctx, srv.Instrumentation.Diagnostic.Config, instrumentationRouter)
 		if err != nil {
-			log.For(ctx).Fatal("Unable to register diagnostic instrumentation", zap.Error(err))
+			log.For(ctx).Fatal("Unable to register diagnostic instrumentation", log.Error(err))
 		}
 		defer cancelFunc()
 	}
 	if srv.Instrumentation.Prometheus.Enabled {
 		if _, err := prometheus.RegisterExporter(ctx, srv.Instrumentation.Prometheus.Config, instrumentationRouter); err != nil {
-			log.For(ctx).Fatal("Unable to register prometheus instrumentation", zap.Error(err))
+			log.For(ctx).Fatal("Unable to register prometheus instrumentation", log.Error(err))
 		}
 	}
 	if srv.Instrumentation.Jaeger.Enabled {
 		// Apply default service name in empty
 		if srv.Instrumentation.Jaeger.Config.ServiceName == "" {
-			log.For(ctx).Debug("No Jaeger service name given, applying server name as service name", zap.String("name", srv.Name))
+			log.For(ctx).Debug("No Jaeger service name given, applying server name as service name", log.String("name", srv.Name))
 			srv.Instrumentation.Jaeger.Config.ServiceName = srv.Name
 		}
 
 		// Register exporter
 		cancelFunc, err := jaeger.RegisterExporter(ctx, srv.Instrumentation.Jaeger.Config)
 		if err != nil {
-			log.For(ctx).Fatal("Unable to register jaeger instrumentation", zap.Error(err))
+			log.For(ctx).Fatal("Unable to register jaeger instrumentation", log.Error(err))
 		}
 		defer cancelFunc()
 	}
 	if srv.Instrumentation.OCAgent.Enabled {
 		cancelFunc, err := ocagent.RegisterExporter(ctx, srv.Instrumentation.OCAgent.Config)
 		if err != nil {
-			log.For(ctx).Fatal("Unable to register ocagent instrumentation", zap.Error(err))
+			log.For(ctx).Fatal("Unable to register ocagent instrumentation", log.Error(err))
 		}
 		defer cancelFunc()
 	}
@@ -98,7 +98,7 @@ func Serve(ctx context.Context, srv *Server) error {
 			Revision: srv.Revision,
 			Interval: srv.Instrumentation.Runtime.Config.Interval,
 		}); err != nil {
-			log.For(ctx).Fatal("Unable to start runtime monitoring", zap.Error(err))
+			log.For(ctx).Fatal("Unable to start runtime monitoring", log.Error(err))
 		}
 	}
 
@@ -138,7 +138,7 @@ func Serve(ctx context.Context, srv *Server) error {
 
 		group.Add(
 			func() error {
-				log.For(ctx).Info("Starting instrumentation server", zap.Stringer("address", ln.Addr()))
+				log.For(ctx).Info("Starting instrumentation server", log.String("address", ln.Addr().String()))
 				return server.Serve(ln)
 			},
 			func(e error) {
@@ -169,8 +169,8 @@ func Serve(ctx context.Context, srv *Server) error {
 				signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 
 				select {
-				case sig := <-ch:
-					log.For(ctx).Info("Captured signal", zap.Any("signal", sig))
+				case <-ch:
+					log.For(ctx).Info("Captured signal")
 				case <-cancelInterrupt:
 				}
 

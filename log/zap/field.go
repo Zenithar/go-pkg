@@ -20,43 +20,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package log
+package zap
 
 import (
-	"context"
-	"io"
-
-	"github.com/pkg/errors"
+	"go.uber.org/zap/zapcore"
+	"go.zenithar.org/pkg/log"
 )
 
-// CheckErr handles error correctly
-func CheckErr(msg string, err error, fields ...Field) {
-	if err != nil {
-		fields = append(fields, Error(err))
-		Default().Bg().Error(msg, fields...)
-	}
-}
-
-// CheckErrCtx handles error correctly
-func CheckErrCtx(ctx context.Context, msg string, err error, fields ...Field) {
-	if err != nil {
-		fields = append(fields, Error(errors.WithStack(err)))
-		Default().For(ctx).Error(msg, fields...)
-	}
-}
-
-// SafeClose handles the closer error
-func SafeClose(c io.Closer, msg string, fields ...Field) {
-	if cerr := c.Close(); cerr != nil {
-		fields = append(fields, Error(errors.WithStack(cerr)))
-		Default().Bg().Error(msg, fields...)
-	}
-}
-
-// SafeCloseCtx handles the closer error
-func SafeCloseCtx(ctx context.Context, c io.Closer, msg string, fields ...Field) {
-	if cerr := c.Close(); cerr != nil {
-		fields = append(fields, Error(errors.WithStack(cerr)))
-		Default().For(ctx).Error(msg, fields...)
-	}
+func zfields(fields []log.Field) []zapcore.Field {
+	return nil
 }

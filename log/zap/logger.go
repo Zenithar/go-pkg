@@ -35,30 +35,30 @@ type logger struct {
 
 // Debug logs an debug msg with fields
 func (l logger) Debug(msg string, fields ...log.Field) {
-	l.logger.Debug(msg, fields...)
+	l.logger.Debug(msg, zfields(fields)...)
 }
 
 // Info logs an info msg with fields
 func (l logger) Info(msg string, fields ...log.Field) {
-	l.logger.Info(msg, fields...)
+	l.logger.Info(msg, zfields(fields)...)
 }
 
 // Error logs an error msg with fields
 func (l logger) Error(msg string, fields ...log.Field) {
-	l.logger.Error(msg, fields...)
+	l.logger.Error(msg, zfields(fields)...)
 }
 
 // Warn logs a warning with fields
 func (l logger) Warn(msg string, fields ...log.Field) {
-	l.logger.Warn(msg, fields...)
+	l.logger.Warn(msg, zfields(fields)...)
 }
 
 // Fatal logs a fatal error msg with fields
 func (l logger) Fatal(msg string, fields ...log.Field) {
-	l.logger.Fatal(msg, fields...)
+	l.logger.Fatal(msg, zfields(fields)...)
 }
 
 // With creates a child logger, and optionally adds some context fields to that logger.
-func (l logger) With(fields ...log.Field) Logger {
-	return &logger{logger: l.logger.With(fields...)}
+func (l logger) With(fields ...log.Field) log.Logger {
+	return &logger{logger: l.logger.With(zfields(fields)...)}
 }

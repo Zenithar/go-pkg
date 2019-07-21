@@ -100,10 +100,10 @@ func Setup(ctx context.Context, opts log.Options) {
 	}
 
 	// Prepare factory
-	logFactory := NewFactory(logger)
+	logFactory := newFactory(logger)
 
 	// Override the global factory
-	log.SetLogger(logFactory)
+	log.SetLoggerFactory(logFactory)
 
 	// Override zap default logger
 	zap.ReplaceGlobals(logger)

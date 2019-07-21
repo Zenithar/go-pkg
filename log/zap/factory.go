@@ -37,17 +37,17 @@ type factory struct {
 }
 
 // DefaultFactory returns a default zap logger factory
-func DefaultFactory() log.LoggerFactory {
-	defaultLogger, err := zap.()
+func defaultFactory() log.LoggerFactory {
+	defaultLogger, err := zap.NewProduction()
 	if err != nil {
 		panic(err)
 	}
 
-	return NewFactory(defaultLogger)
+	return newFactory(defaultLogger)
 }
 
 // NewFactory creates a new Factory.
-func NewFactory(logger *zap.Logger) log.LoggerFactory {
+func newFactory(logger *zap.Logger) log.LoggerFactory {
 	return &factory{logger: logger}
 }
 
@@ -71,5 +71,11 @@ func (b factory) For(ctx context.Context) log.Logger {
 
 // With creates a child logger, and optionally adds some context fields to that logger.
 func (b factory) With(fields ...log.Field) log.LoggerFactory {
-	return &factory{logger: b.logger.With(fields...)}
+	return &factory{logger: b.logger.With(zfields(fields)...)}
+}
+
+// -----------------------------------------------------------------------------
+
+func init() {
+	log.SetLoggerFactory(defaultFactory())
 }

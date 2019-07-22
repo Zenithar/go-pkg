@@ -15,7 +15,7 @@ import (
 	"golang.org/x/xerrors"
 
 	"go.zenithar.org/pkg/log"
-	"go.zenithar.org/pkg/log/zap"
+	"go.zenithar.org/pkg/log/adapters/zap"
 	"go.zenithar.org/pkg/platform/diagnostic"
 	"go.zenithar.org/pkg/platform/jaeger"
 	"go.zenithar.org/pkg/platform/ocagent"
@@ -42,7 +42,7 @@ func Serve(ctx context.Context, srv *Server) error {
 	appID := uniuri.NewLen(64)
 
 	// Prepare logger
-	zap.Setup(ctx, log.Options{
+	zap.Setup(ctx, zap.Options{
 		Debug:     srv.Debug,
 		AppName:   srv.Name,
 		AppID:     appID,

@@ -35,7 +35,7 @@ import (
 // -----------------------------------------------------------------------------
 
 // Setup the logger
-func Setup(ctx context.Context, opts log.Options) {
+func Setup(ctx context.Context, opts Options) {
 
 	// Initialize logs
 	var config zap.Config

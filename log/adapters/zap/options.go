@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package log
+package zap
 
 // Options declares logger options for builder
 type Options struct {
@@ -36,7 +36,7 @@ type Options struct {
 // -----------------------------------------------------------------------------
 
 // DefaultOptions defines default logger options
-var DefaultOptions = &Options{
+var DefaultOptions = Options{
 	Debug:     false,
 	LogLevel:  "info",
 	AppName:   "changeme",

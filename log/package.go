@@ -35,7 +35,7 @@ func SetLoggerFactory(instance LoggerFactory) {
 	if defaultFactory != nil {
 		defaultFactory.Bg().Debug("Replacing logger factory", String("old", defaultFactory.Name()), String("new", instance.Name()))
 	} else {
-		defaultFactory.Bg().Debug("Initializing logger factory", String("factory", defaultFactory.Name()))
+		instance.Bg().Debug("Initializing logger factory", String("factory", instance.Name()))
 	}
 	defaultFactory = instance
 }

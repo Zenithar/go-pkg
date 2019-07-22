@@ -1,4 +1,4 @@
-module go.zenithar.org/pkg/log/zap
+module go.zenithar.org/pkg/log/adapters/zap
 
 go 1.12
 
@@ -10,5 +10,5 @@ require (
 	go.uber.org/atomic v1.4.0 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
 	go.uber.org/zap v1.10.0
-	go.zenithar.org/pkg/log v0.1.1
+	go.zenithar.org/pkg/log v0.1.3
 )

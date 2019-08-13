@@ -315,7 +315,7 @@ func Transaction(ctx context.Context, client *mongowrapper.WrappedClient, fn Tra
 			}
 
 			if cmdErr, ok := err.(mongo.CommandError); ok && cmdErr.HasErrorLabel("TransientTransactionError") {
-				log.For(ctx).Warn("Transient error occured, retrying transaction ...")
+				log.For(ctx).Warn("Transient error occurred, retrying transaction ...")
 				continue
 			}
 			return err

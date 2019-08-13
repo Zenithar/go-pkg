@@ -6,7 +6,7 @@ replace github.com/opencensus-integrations/gomongowrapper v0.0.1 => github.com/Z
 
 require (
 	github.com/opencensus-integrations/gomongowrapper v0.0.1
-	go.mongodb.org/mongo-driver v1.0.4
+	go.mongodb.org/mongo-driver v1.0.1-0.20190812160042-74cffef35f2e
 	go.zenithar.org/pkg/db v0.0.3
 	go.zenithar.org/pkg/log v0.1.3
 	golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7

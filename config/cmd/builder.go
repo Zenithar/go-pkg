@@ -8,6 +8,7 @@ import (
 	defaults "github.com/mcuadros/go-defaults"
 	toml "github.com/pelletier/go-toml"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 
 	"go.zenithar.org/pkg/flags"
 	"go.zenithar.org/pkg/log"
@@ -36,7 +37,7 @@ func NewConfigCommand(conf interface{}, envPrefix string) *cobra.Command {
 			if !configNewAsEnvFlag {
 				btes, err := toml.Marshal(conf)
 				if err != nil {
-					log.Bg().Fatal("Error during configuration export", log.Error(err))
+					log.Bg().Fatal("Error during configuration export", zap.Error(err))
 				}
 				fmt.Println(string(btes))
 			} else {

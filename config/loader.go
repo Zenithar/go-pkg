@@ -7,6 +7,7 @@ import (
 
 	defaults "github.com/mcuadros/go-defaults"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 	"golang.org/x/xerrors"
 
 	"go.zenithar.org/pkg/flags"
@@ -25,7 +26,7 @@ func Load(conf interface{}, envPrefix string, cfgFile string) error {
 	// Overrides with environment
 	for k := range flags.AsEnvVariables(conf, "", false) {
 		envName := fmt.Sprintf("%s_%s", upPrefix, k)
-		log.CheckErr("Unable to bind environment variable", viper.BindEnv(strings.ToLower(strings.Replace(k, "_", ".", -1)), envName), log.String("var", envName))
+		log.CheckErr("Unable to bind environment variable", viper.BindEnv(strings.ToLower(strings.Replace(k, "_", ".", -1)), envName), zap.String("var", envName))
 	}
 
 	// Apply file settings
@@ -35,7 +36,7 @@ func Load(conf interface{}, envPrefix string, cfgFile string) error {
 			return xerrors.Errorf("Unable to open non-existing file '%s': %w", cfgFile, err)
 		}
 
-		log.Bg().Info("Load settings from file", log.String("path", cfgFile))
+		log.Bg().Info("Load settings from file", zap.String("path", cfgFile))
 
 		viper.SetConfigFile(cfgFile)
 		if err := viper.ReadInConfig(); err != nil {

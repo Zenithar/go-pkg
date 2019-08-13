@@ -42,7 +42,7 @@ func Serve(ctx context.Context, srv *Server) error {
 	appID := uniuri.NewLen(64)
 
 	// Prepare logger
-	log.Setup(ctx, zap.Options{
+	log.Setup(ctx, log.Options{
 		Debug:     srv.Debug,
 		AppName:   srv.Name,
 		AppID:     appID,

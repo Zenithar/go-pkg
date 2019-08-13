@@ -24,16 +24,18 @@ package log
 
 import (
 	"context"
+
+	"go.uber.org/zap/zapcore"
 )
 
 // Logger is a simplified abstraction of the zap.Logger
 type Logger interface {
-	Debug(msg string, fields ...Field)
-	Info(msg string, fields ...Field)
-	Warn(msg string, fields ...Field)
-	Error(msg string, fields ...Field)
-	Fatal(msg string, fields ...Field)
-	With(fields ...Field) Logger
+	Debug(msg string, fields ...zapcore.Field)
+	Info(msg string, fields ...zapcore.Field)
+	Warn(msg string, fields ...zapcore.Field)
+	Error(msg string, fields ...zapcore.Field)
+	Fatal(msg string, fields ...zapcore.Field)
+	With(fields ...zapcore.Field) Logger
 }
 
 // LoggerFactory defines logger factory contract
@@ -41,5 +43,5 @@ type LoggerFactory interface {
 	Name() string
 	Bg() Logger
 	For(context.Context) Logger
-	With(...Field) LoggerFactory
+	With(...zapcore.Field) LoggerFactory
 }

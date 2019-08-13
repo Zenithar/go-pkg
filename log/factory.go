@@ -20,14 +20,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-package zap
+package log
 
 import (
 	"context"
 
-	"go.zenithar.org/pkg/log"
-
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // Factory is the default logging wrapper that can create
@@ -36,18 +35,8 @@ type factory struct {
 	logger *zap.Logger
 }
 
-// DefaultFactory returns a default zap logger factory
-func defaultFactory() log.LoggerFactory {
-	defaultLogger, err := zap.NewProduction()
-	if err != nil {
-		panic(err)
-	}
-
-	return newFactory(defaultLogger)
-}
-
 // NewFactory creates a new Factory.
-func newFactory(logger *zap.Logger) log.LoggerFactory {
+func NewFactory(logger *zap.Logger) LoggerFactory {
 	return &factory{logger: logger}
 }
 
@@ -59,23 +48,17 @@ func (b factory) Name() string {
 }
 
 // Bg creates a context-unaware logger.
-func (b factory) Bg() log.Logger {
+func (b factory) Bg() Logger {
 	return &logger{logger: b.logger}
 }
 
 // For returns a context-aware Logger.
 // TODO: OpenCensus implementation
-func (b factory) For(ctx context.Context) log.Logger {
+func (b factory) For(ctx context.Context) Logger {
 	return b.Bg()
 }
 
 // With creates a child logger, and optionally adds some context fields to that logger.
-func (b factory) With(fields ...log.Field) log.LoggerFactory {
-	return &factory{logger: b.logger.With(zfields(fields)...)}
-}
-
-// -----------------------------------------------------------------------------
-
-func init() {
-	log.SetLoggerFactory(defaultFactory())
+func (b factory) With(fields ...zapcore.Field) LoggerFactory {
+	return &factory{logger: b.logger.With(fields...)}
 }

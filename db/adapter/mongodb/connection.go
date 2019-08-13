@@ -30,6 +30,7 @@ import (
 
 	mongowrapper "github.com/opencensus-integrations/gomongowrapper"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.uber.org/zap"
 	"golang.org/x/xerrors"
 )
 
@@ -53,14 +54,14 @@ func Connection(ctx context.Context, cfg *Configuration) (*mongowrapper.WrappedC
 	// Extract database name from connection string
 	client, err := mongowrapper.Connect(ctx, options.Client().ApplyURI(cfg.ConnectionString))
 	if err != nil {
-		log.For(ctx).Error("Unable to connect to MongoDB", log.Error(err))
+		log.For(ctx).Error("Unable to connect to MongoDB", zap.Error(err))
 		return nil, xerrors.Errorf("mongodb: %w", err)
 	}
 
 	// Check connection
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		log.For(ctx).Error("Unable to ping MongoDB database", log.Error(err))
+		log.For(ctx).Error("Unable to ping MongoDB database", zap.Error(err))
 		return nil, xerrors.Errorf("mongodb: %w", err)
 	}
 

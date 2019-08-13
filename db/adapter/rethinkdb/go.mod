@@ -14,7 +14,7 @@ require (
 	github.com/sirupsen/logrus v1.4.1 // indirect
 	github.com/smartystreets/assertions v0.0.0-20190401211740-f487f9de1cd3 // indirect
 	github.com/stretchr/objx v0.2.0 // indirect
-	go.zenithar.org/pkg/db v0.0.2
+	go.zenithar.org/pkg/db v0.0.3
 	golang.org/x/crypto v0.0.0-20190418165655-df01cb2cc480 // indirect
 	golang.org/x/net v0.0.0-20190420063019-afa5a82059c6 // indirect
 	golang.org/x/sys v0.0.0-20190419153524-e8e3143a4f4a // indirect

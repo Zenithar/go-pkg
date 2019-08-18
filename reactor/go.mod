@@ -1,4 +1,4 @@
-module go.zenithar.org/reactor
+module go.zenithar.org/pkg/reactor
 
 go 1.12
 

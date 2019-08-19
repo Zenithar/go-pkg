@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"go.zenithar.org/pkg/errors"
+	"go.zenithar.org/pkg/types"
 )
 
 type defaultReactor struct {
@@ -27,7 +28,7 @@ func New(name string) Reactor {
 
 func (r *defaultReactor) Send(ctx context.Context, req interface{}, cb Callback) error {
 	// Check if request is nil
-	if isNil(req) {
+	if types.IsNil(req) {
 		return errors.Newf(errors.InvalidArgument, nil, "reactor(%s): request must not be nil", r.name)
 	}
 

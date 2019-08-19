@@ -8,4 +8,5 @@ require (
 	go.uber.org/zap v1.10.0
 	go.zenithar.org/pkg/errors v0.0.1
 	go.zenithar.org/pkg/log v0.2.0
+	go.zenithar.org/pkg/types v0.0.1
 )

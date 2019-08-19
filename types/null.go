@@ -1,7 +1,8 @@
-package reactor
+package types
 
 import "reflect"
 
-func isNil(c interface{}) bool {
+// IsNil returns true if given object is nil
+func IsNil(c interface{}) bool {
 	return c == nil || (reflect.ValueOf(c).Kind() == reflect.Ptr && reflect.ValueOf(c).IsNil())
 }

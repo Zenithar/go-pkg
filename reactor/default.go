@@ -50,7 +50,7 @@ func (r *defaultReactor) Send(ctx context.Context, req interface{}, cb Callback)
 
 func (r *defaultReactor) Do(ctx context.Context, req interface{}) (interface{}, error) {
 	// Check if request is nil
-	if isNil(req) {
+	if types.IsNil(req) {
 		return nil, errors.Newf(errors.InvalidArgument, nil, "reactor(%s): request must not be nil", r.name)
 	}
 

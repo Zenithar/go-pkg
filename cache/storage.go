@@ -2,13 +2,12 @@ package cache
 
 import (
 	"context"
+	"errors"
 	"time"
-
-	"golang.org/x/xerrors"
 )
 
 // ErrCacheMiss is raised when item is not found in cache
-var ErrCacheMiss = xerrors.New("cache: item not found")
+var ErrCacheMiss = errors.New("cache: item not found")
 
 //go:generate mockgen -destination mock/storage.gen.go -package mock go.zenithar.org/spotigraph/pkg/cache Storage
 

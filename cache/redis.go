@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-redis/redis"
-	"golang.org/x/xerrors"
+	"github.com/go-redis/redis/v7"
 )
 
 type redisStorage struct {
@@ -16,6 +15,14 @@ type redisStorage struct {
 
 // Redis initializes a redis cache implementation wrapper
 func Redis(client *redis.Client, namespace string) (Storage, error) {
+	// Check arguments
+	if client == nil {
+		return nil, fmt.Errorf("redis client must not be nil")
+	}
+	if namespace == "" {
+		return nil, fmt.Errorf("cache namespace must not be blank")
+	}
+
 	// Return wrapper
 	return &redisStorage{
 		client:    client,
@@ -25,26 +32,26 @@ func Redis(client *redis.Client, namespace string) (Storage, error) {
 
 // -----------------------------------------------------------------------------
 
-func (s *redisStorage) Get(_ context.Context, key string) ([]byte, error) {
-	value, err := s.client.Get(s.key(key)).Bytes()
+func (s *redisStorage) Get(ctx context.Context, key string) ([]byte, error) {
+	value, err := s.client.WithContext(ctx).Get(s.key(key)).Bytes()
 	if err != nil {
-		return nil, xerrors.Errorf("bigcache: unable to retrieve '%q': %w", key, err)
+		return nil, fmt.Errorf("unable to retrieve '%q': %w", key, err)
 	}
 	return value, nil
 }
 
-func (s *redisStorage) Set(_ context.Context, key string, value []byte, expiration time.Duration) error {
-	err := s.client.Set(s.key(key), value, expiration).Err()
+func (s *redisStorage) Set(ctx context.Context, key string, value []byte, expiration time.Duration) error {
+	err := s.client.WithContext(ctx).Set(s.key(key), value, expiration).Err()
 	if err != nil {
-		return xerrors.Errorf("bigcache: unable to set '%q' value: %w", key, err)
+		return fmt.Errorf("unable to set '%q' value: %w", key, err)
 	}
 	return nil
 }
 
-func (s *redisStorage) Remove(_ context.Context, key string) error {
-	err := s.client.Del(s.key(key)).Err()
+func (s *redisStorage) Remove(ctx context.Context, key string) error {
+	err := s.client.WithContext(ctx).Del(s.key(key)).Err()
 	if err != nil {
-		return xerrors.Errorf("bigcache: unable to remove '%q' value: %w", key, err)
+		return fmt.Errorf("unable to remove '%q' value: %w", key, err)
 	}
 	return nil
 }

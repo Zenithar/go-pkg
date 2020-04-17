@@ -12,8 +12,8 @@ import (
 )
 
 // GRPC registers an gRPC listener actor.
-func GRPC(server *grpc.Server, ln net.Listener) func(context.Context, *run.Group) error {
-	return func(ctx context.Context, group *run.Group) error {
+func GRPC(server *grpc.Server, ln net.Listener) func(context.Context, *run.Group) {
+	return func(ctx context.Context, group *run.Group) {
 		// Register grpc actor
 		group.Add(
 			func() error {
@@ -25,6 +25,5 @@ func GRPC(server *grpc.Server, ln net.Listener) func(context.Context, *run.Group
 				server.GracefulStop()
 			},
 		)
-		return nil
 	}
 }

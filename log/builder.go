@@ -24,7 +24,7 @@ type Options struct {
 // -----------------------------------------------------------------------------
 
 // DefaultOptions defines default logger options
-var DefaultOptions = &Options{
+var DefaultOptions = Options{
 	Debug:     false,
 	LogLevel:  "info",
 	AppName:   "changeme",
@@ -37,7 +37,7 @@ var DefaultOptions = &Options{
 // -----------------------------------------------------------------------------
 
 // Setup the logger
-func Setup(ctx context.Context, opts *Options) {
+func Setup(ctx context.Context, opts Options) {
 	// Initialize logs
 	var config zap.Config
 

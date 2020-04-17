@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"net/http"
 
 	"go.zenithar.org/pkg/log"
 	"go.zenithar.org/pkg/platform/actors"
@@ -13,7 +12,6 @@ import (
 	"github.com/dchest/uniuri"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/oklog/run"
-	"go.opencensus.io/trace"
 )
 
 // -----------------------------------------------------------------------------
@@ -27,7 +25,7 @@ type Server struct {
 	Network         string
 	Address         string
 	Instrumentation InstrumentationConfig
-	Builder         func(ctx context.Context, ln net.Listener, group *run.Group)
+	Builder         func(ln net.Listener, group *run.Group)
 }
 
 // Validate server settings
@@ -63,35 +61,10 @@ func Serve(ctx context.Context, srv Server) error {
 		LogLevel:  srv.Instrumentation.Logs.Level,
 	})
 
-	// Preparing instrumentation
-	instrumentationRouter := http.NewServeMux()
-
-	// Register common features
-
-	// Trace everything when debugging is enabled
-	if srv.Debug {
-		trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
-	}
-
 	// Configure graceful restart
 	upg := reloader.Create(ctx)
 
 	var group run.Group
-
-	// Instrumentation server
-	{
-		ln, err := upg.Listen(srv.Instrumentation.Network, srv.Instrumentation.Listen)
-		if err != nil {
-			return fmt.Errorf("platform: unable to start instrumentation server: %w", err)
-		}
-
-		server := &http.Server{
-			Handler: instrumentationRouter,
-		}
-
-		// Register HTTP actor
-		actors.HTTP(server, ln)(ctx, &group)
-	}
 
 	// Initialiaze network listener
 	ln, err := upg.Listen(srv.Network, srv.Address)
@@ -100,7 +73,7 @@ func Serve(ctx context.Context, srv Server) error {
 	}
 
 	// Initialize the component
-	srv.Builder(ctx, ln, &group)
+	srv.Builder(ln, &group)
 
 	// Setup signal handler
 	actors.Signal(ctx, &group)

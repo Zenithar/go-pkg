@@ -9,11 +9,10 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
-
-	"github.com/pkg/errors"
 )
 
 // Options represents the information needed to create client and server TLS configurations.
@@ -133,7 +132,7 @@ func adjustMinVersion(options Options, config *tls.Config) error {
 // IsErrEncryptedKey returns true if the 'err' is an error of incorrect
 // password when tryin to decrypt a TLS private key
 func IsErrEncryptedKey(err error) bool {
-	return errors.Cause(err) == x509.IncorrectPasswordError
+	return errors.Is(err, x509.IncorrectPasswordError)
 }
 
 // getPrivateKey returns the private key in 'keyBytes', in PEM-encoded format.
@@ -150,7 +149,7 @@ func getPrivateKey(keyBytes []byte, passphrase string) ([]byte, error) {
 	if x509.IsEncryptedPEMBlock(pemBlock) {
 		keyBytes, err = x509.DecryptPEMBlock(pemBlock, []byte(passphrase))
 		if err != nil {
-			return nil, errors.Wrap(err, "private key is encrypted, but could not decrypt it")
+			return nil, fmt.Errorf("private key is encrypted, but could not decrypt it: %w", err)
 		}
 		keyBytes = pem.EncodeToMemory(&pem.Block{Type: pemBlock.Type, Bytes: keyBytes})
 	}
@@ -170,22 +169,22 @@ func getCert(options Options) ([]tls.Certificate, error) {
 
 	cert, err := ioutil.ReadFile(options.CertFile)
 	if err != nil {
-		return nil, errors.Wrap(err, errMessage)
+		return nil, fmt.Errorf("%s: %w", errMessage, err)
 	}
 
 	prKeyBytes, err := ioutil.ReadFile(options.KeyFile)
 	if err != nil {
-		return nil, errors.Wrap(err, errMessage)
+		return nil, fmt.Errorf("%s: %w", errMessage, err)
 	}
 
 	prKeyBytes, err = getPrivateKey(prKeyBytes, options.Passphrase)
 	if err != nil {
-		return nil, errors.Wrap(err, errMessage)
+		return nil, fmt.Errorf("%s: %w", errMessage, err)
 	}
 
 	tlsCert, err := tls.X509KeyPair(cert, prKeyBytes)
 	if err != nil {
-		return nil, errors.Wrap(err, errMessage)
+		return nil, fmt.Errorf("%s: %w", errMessage, err)
 	}
 
 	return []tls.Certificate{tlsCert}, nil

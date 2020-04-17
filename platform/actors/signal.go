@@ -12,7 +12,7 @@ import (
 )
 
 // Signal register an Signal handle actor
-func Signal(ctx context.Context, group *run.Group) {
+func Signal(ctx context.Context, group run.Group) {
 	var (
 		cancelInterrupt = make(chan struct{})
 		ch              = make(chan os.Signal, 2)

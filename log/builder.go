@@ -1,25 +1,3 @@
-// MIT License
-//
-// Copyright (c) 2019 Thibault NORMAND
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-
 package log
 
 import (
@@ -59,12 +37,12 @@ var DefaultOptions = &Options{
 // -----------------------------------------------------------------------------
 
 // Setup the logger
-func Setup(ctx context.Context, opts Options) {
-
+func Setup(ctx context.Context, opts *Options) {
 	// Initialize logs
 	var config zap.Config
 
 	if opts.Debug {
+		opts.LogLevel = "debug"
 		config = zap.NewDevelopmentConfig()
 		config.DisableCaller = true
 		config.DisableStacktrace = true
@@ -105,7 +83,7 @@ func Setup(ctx context.Context, opts Options) {
 		logger.Info("Starting sentry collector", zap.String("dsn", opts.SentryDSN))
 
 		cfg := zapsentry.Configuration{
-			Level: zapcore.ErrorLevel, //when to send message to sentry
+			Level: zapcore.ErrorLevel, // when to send message to sentry
 			Tags: map[string]string{
 				"application.name": opts.AppName,
 				"application.id":   opts.AppID,
@@ -119,8 +97,6 @@ func Setup(ctx context.Context, opts Options) {
 		}
 
 		logger = zapsentry.AttachCoreToLogger(core, logger)
-	} else {
-		logger.Info("Sentry collector disabled")
 	}
 
 	// Prepare factory

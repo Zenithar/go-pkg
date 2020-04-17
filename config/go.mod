@@ -13,5 +13,5 @@ require (
 	github.com/spf13/viper v1.6.3
 	go.uber.org/zap v1.14.1
 	go.zenithar.org/pkg/flags v0.0.0-00010101000000-000000000000
-	go.zenithar.org/pkg/log v0.1.1
+	go.zenithar.org/pkg/log v0.0.0-00010101000000-000000000000
 )

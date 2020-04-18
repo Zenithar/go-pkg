@@ -1,44 +1,21 @@
-// MIT License
-//
-// Copyright (c) 2019 Thibault NORMAND
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-
 package postgresql
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"sync"
 	"time"
-
-	// Load postgresql drivers
-	_ "github.com/jackc/pgx"
-	_ "github.com/jackc/pgx/pgtype"
-	_ "github.com/jackc/pgx/stdlib"
-	_ "github.com/lib/pq"
 
 	"go.zenithar.org/pkg/log"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/opencensus-integrations/ocsql"
-	"golang.org/x/xerrors"
 	try "gopkg.in/matryer/try.v1"
+
+	// Load postgresql drivers
+	_ "github.com/jackc/pgx/v4"
+	_ "github.com/lib/pq"
 )
 
 var (
@@ -62,7 +39,7 @@ func Connection(ctx context.Context, cfg *Configuration) (*sqlx.DB, error) {
 
 		connStr, err := ParseURL(cfg.ConnectionString)
 		if err != nil {
-			return false, xerrors.Errorf("postgresql: %w", err)
+			return false, fmt.Errorf("postgresql: %w", err)
 		}
 
 		defaultDriver := "postgres"
@@ -77,7 +54,7 @@ func Connection(ctx context.Context, cfg *Configuration) (*sqlx.DB, error) {
 			case "postgres", "pgx":
 				defaultDriver = drv
 			default:
-				return false, xerrors.New("postgresql: invalid 'driver' option value, 'postgres' or 'pgx' supported")
+				return false, errors.New("postgresql: invalid 'driver' option value, 'postgres' or 'pgx' supported")
 			}
 		}
 
@@ -100,18 +77,18 @@ func Connection(ctx context.Context, cfg *Configuration) (*sqlx.DB, error) {
 			}),
 		)
 		if err != nil {
-			return false, xerrors.Errorf("postgresql: failed to register ocsql driver: %w", err)
+			return false, fmt.Errorf("postgresql: failed to register ocsql driver: %w", err)
 		}
 
 		// Connect to database
 		conn, err = sqlx.Open(driverName, connStr.String())
 		if err != nil {
-			return attempt < 10, xerrors.Errorf("postgresql: unable to open driver: %w", err)
+			return attempt < 10, fmt.Errorf("postgresql: unable to open driver: %w", err)
 		}
 
 		// Check connection
 		if err = conn.Ping(); err != nil {
-			return attempt < 10, xerrors.Errorf("postgresql: unable to ping database: %w", err)
+			return attempt < 10, fmt.Errorf("postgresql: unable to ping database: %w", err)
 		}
 
 		// Update connection pool settings
@@ -124,7 +101,7 @@ func Connection(ctx context.Context, cfg *Configuration) (*sqlx.DB, error) {
 		return false, nil
 	})
 	if err != nil {
-		return nil, xerrors.Errorf("postgresql: unable to connect to database: %w", err)
+		return nil, fmt.Errorf("postgresql: unable to connect to database: %w", err)
 	}
 
 	once.Do(func() {

@@ -2,8 +2,8 @@ package containers
 
 import (
 	"strings"
-	
-	dockertest "gopkg.in/ory-am/dockertest.v3"
+
+	dockertest "github.com/ory/dockertest/v3"
 )
 
 // GetName returns container's name

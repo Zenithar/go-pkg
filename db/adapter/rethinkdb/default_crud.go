@@ -1,34 +1,12 @@
-// MIT License
-//
-// Copyright (c) 2019 Thibault NORMAND
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-
 package rethinkdb
 
 import (
 	"context"
+	"fmt"
 
 	"go.zenithar.org/pkg/db"
 
-	"golang.org/x/xerrors"
-	r "gopkg.in/rethinkdb/rethinkdb-go.v5"
+	r "gopkg.in/rethinkdb/rethinkdb-go.v6"
 )
 
 // Default contains the basic implementation of the EntityCRUD interface
@@ -80,7 +58,7 @@ func (d *Default) Insert(ctx context.Context, data interface{}) error {
 		if err == r.ErrEmptyResult {
 			return db.ErrNoResult
 		}
-		return xerrors.Errorf("rethinkdb: unable to execute query: %w", err)
+		return fmt.Errorf("rethinkdb: unable to execute query: %w", err)
 	}
 
 	return nil
@@ -95,7 +73,7 @@ func (d *Default) InsertOrUpdate(ctx context.Context, id interface{}, data inter
 		if err == r.ErrEmptyResult {
 			return db.ErrNoResult
 		}
-		return xerrors.Errorf("rethinkdb: unable to execute query: %w", err)
+		return fmt.Errorf("rethinkdb: unable to execute query: %w", err)
 	}
 
 	return nil
@@ -107,14 +85,14 @@ func (d *Default) Find(ctx context.Context, id interface{}, value interface{}) e
 		Context: ctx,
 	})
 	if err != nil {
-		return xerrors.Errorf("rethinkdb: unable to execute query: %w", err)
+		return fmt.Errorf("rethinkdb: unable to execute query: %w", err)
 	}
 
 	if err := cursor.One(value); err != nil {
 		if err == r.ErrEmptyResult {
 			return db.ErrNoResult
 		}
-		return xerrors.Errorf("rethinkdb: unable to retrieve query result: %w", err)
+		return fmt.Errorf("rethinkdb: unable to retrieve query result: %w", err)
 	}
 
 	return nil
@@ -126,14 +104,14 @@ func (d *Default) FindOneBy(ctx context.Context, key string, value interface{}, 
 		Context: ctx,
 	})
 	if err != nil {
-		return xerrors.Errorf("rethinkdb: unable to execute query: %w", err)
+		return fmt.Errorf("rethinkdb: unable to execute query: %w", err)
 	}
 
 	if err := cursor.One(result); err != nil {
 		if err == r.ErrEmptyResult {
 			return db.ErrNoResult
 		}
-		return xerrors.Errorf("rethinkdb: unable to retrieve query result: %w", err)
+		return fmt.Errorf("rethinkdb: unable to retrieve query result: %w", err)
 	}
 
 	return nil
@@ -147,14 +125,14 @@ func (d *Default) FindBy(ctx context.Context, key string, value interface{}, res
 		Context: ctx,
 	})
 	if err != nil {
-		return xerrors.Errorf("rethinkdb: unable to execute query: %w", err)
+		return fmt.Errorf("rethinkdb: unable to execute query: %w", err)
 	}
 
 	if err := cursor.All(results); err != nil {
 		if err == r.ErrEmptyResult {
 			return db.ErrNoResult
 		}
-		return xerrors.Errorf("rethinkdb: unable to retrieve query result: %w", err)
+		return fmt.Errorf("rethinkdb: unable to retrieve query result: %w", err)
 	}
 
 	return nil
@@ -168,7 +146,7 @@ func (d *Default) FindByAndCount(ctx context.Context, key string, value interfac
 		Context: ctx,
 	})
 	if err != nil {
-		return 0, xerrors.Errorf("rethinkdb: unable to execute query: %w", err)
+		return 0, fmt.Errorf("rethinkdb: unable to execute query: %w", err)
 	}
 
 	var count int
@@ -176,7 +154,7 @@ func (d *Default) FindByAndCount(ctx context.Context, key string, value interfac
 		if err == r.ErrEmptyResult {
 			return 0, db.ErrNoResult
 		}
-		return 0, xerrors.Errorf("rethinkdb: unable to retrieve query result: %w", err)
+		return 0, fmt.Errorf("rethinkdb: unable to retrieve query result: %w", err)
 	}
 
 	return count, nil
@@ -188,14 +166,14 @@ func (d *Default) Where(ctx context.Context, filter interface{}, results interfa
 		Context: ctx,
 	})
 	if err != nil {
-		return xerrors.Errorf("rethinkdb: unable to execute query: %w", err)
+		return fmt.Errorf("rethinkdb: unable to execute query: %w", err)
 	}
 
 	if err := cursor.All(results); err != nil {
 		if err == r.ErrEmptyResult {
 			return db.ErrNoResult
 		}
-		return xerrors.Errorf("rethinkdb: unable to retrieve query result: %w", err)
+		return fmt.Errorf("rethinkdb: unable to retrieve query result: %w", err)
 	}
 
 	return nil
@@ -207,7 +185,7 @@ func (d *Default) WhereCount(ctx context.Context, filter interface{}) (int, erro
 		Context: ctx,
 	})
 	if err != nil {
-		return 0, xerrors.Errorf("rethinkdb: unable to execute query: %w", err)
+		return 0, fmt.Errorf("rethinkdb: unable to execute query: %w", err)
 	}
 
 	var count int
@@ -215,7 +193,7 @@ func (d *Default) WhereCount(ctx context.Context, filter interface{}) (int, erro
 		if err == r.ErrEmptyResult {
 			return 0, db.ErrNoResult
 		}
-		return 0, xerrors.Errorf("rethinkdb: unable to retrieve query result: %w", err)
+		return 0, fmt.Errorf("rethinkdb: unable to retrieve query result: %w", err)
 	}
 
 	return count, nil
@@ -227,14 +205,14 @@ func (d *Default) WhereAndFetchOne(ctx context.Context, filter interface{}, resu
 		Context: ctx,
 	})
 	if err != nil {
-		return xerrors.Errorf("rethinkdb: unable to execute query: %w", err)
+		return fmt.Errorf("rethinkdb: unable to execute query: %w", err)
 	}
 
 	if err := cursor.One(result); err != nil {
 		if err == r.ErrEmptyResult {
 			return db.ErrNoResult
 		}
-		return xerrors.Errorf("rethinkdb: unable to retrieve query result: %w", err)
+		return fmt.Errorf("rethinkdb: unable to retrieve query result: %w", err)
 	}
 
 	return nil
@@ -246,14 +224,14 @@ func (d *Default) WhereAndFetchLimit(ctx context.Context, filter interface{}, pa
 		Context: ctx,
 	})
 	if err != nil {
-		return xerrors.Errorf("rethinkdb: unable to execute query: %w", err)
+		return fmt.Errorf("rethinkdb: unable to execute query: %w", err)
 	}
 
 	if err := cursor.All(results); err != nil {
 		if err == r.ErrEmptyResult {
 			return db.ErrNoResult
 		}
-		return xerrors.Errorf("rethinkdb: unable to retrieve query result: %w", err)
+		return fmt.Errorf("rethinkdb: unable to retrieve query result: %w", err)
 	}
 
 	return nil
@@ -268,7 +246,7 @@ func (d *Default) Update(ctx context.Context, selector interface{}, data interfa
 		if err == r.ErrEmptyResult {
 			return db.ErrNoResult
 		}
-		return xerrors.Errorf("rethinkdb: unable to execute query: %w", err)
+		return fmt.Errorf("rethinkdb: unable to execute query: %w", err)
 	}
 
 	return nil
@@ -283,7 +261,7 @@ func (d *Default) UpdateID(ctx context.Context, id interface{}, data interface{}
 		if err == r.ErrEmptyResult {
 			return db.ErrNoResult
 		}
-		return xerrors.Errorf("rethinkdb: unable to execute query: %w", err)
+		return fmt.Errorf("rethinkdb: unable to execute query: %w", err)
 	}
 
 	return nil
@@ -298,7 +276,7 @@ func (d *Default) DeleteAll(ctx context.Context, pred interface{}) error {
 		if err == r.ErrEmptyResult {
 			return db.ErrNoResult
 		}
-		return xerrors.Errorf("rethinkdb: unable to execute query: %w", err)
+		return fmt.Errorf("rethinkdb: unable to execute query: %w", err)
 	}
 
 	return nil
@@ -313,7 +291,7 @@ func (d *Default) Delete(ctx context.Context, id interface{}) error {
 		if err == r.ErrEmptyResult {
 			return db.ErrNoResult
 		}
-		return xerrors.Errorf("rethinkdb: unable to execute query: %w", err)
+		return fmt.Errorf("rethinkdb: unable to execute query: %w", err)
 	}
 
 	return nil
@@ -337,7 +315,7 @@ func (d *Default) Search(ctx context.Context, results interface{}, filter interf
 	if pagination != nil {
 		total, err := d.WhereCount(ctx, filter)
 		if err != nil {
-			return xerrors.Errorf("rethinkdb: unable to execute query: %w", err)
+			return fmt.Errorf("rethinkdb: unable to execute query: %w", err)
 		}
 		pagination.SetTotal(uint(total))
 	}
@@ -357,7 +335,7 @@ func (d *Default) Search(ctx context.Context, results interface{}, filter interf
 		Context: ctx,
 	})
 	if err != nil {
-		return xerrors.Errorf("rethinkdb: unable to execute query: %w", err)
+		return fmt.Errorf("rethinkdb: unable to execute query: %w", err)
 	}
 
 	// Fetch cursor
@@ -366,7 +344,7 @@ func (d *Default) Search(ctx context.Context, results interface{}, filter interf
 		if err == r.ErrEmptyResult {
 			return db.ErrNoResult
 		}
-		return xerrors.Errorf("rethinkdb: unable to retrieve query result: %w", err)
+		return fmt.Errorf("rethinkdb: unable to retrieve query result: %w", err)
 	}
 
 	return nil

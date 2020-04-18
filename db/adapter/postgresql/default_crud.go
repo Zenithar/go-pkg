@@ -1,30 +1,9 @@
-// MIT License
-//
-// Copyright (c) 2019 Thibault NORMAND
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-
 package postgresql
 
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"reflect"
 
 	"go.zenithar.org/pkg/db"
@@ -33,7 +12,6 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 	"github.com/jmoiron/sqlx/reflectx"
-	"golang.org/x/xerrors"
 )
 
 // Default contains the basic implementation of the SQL interface
@@ -98,13 +76,13 @@ func (d *Default) Create(ctx context.Context, data interface{}) error {
 	// Build sql query
 	q, args, err := query.ToSql()
 	if err != nil {
-		return xerrors.Errorf("postgresql: unable to build query: %w", err)
+		return fmt.Errorf("postgresql: unable to build query: %w", err)
 	}
 
 	// Prepare the statement
 	stmt, err := d.session.PreparexContext(ctx, q)
 	if err != nil {
-		return xerrors.Errorf("postgresql: unable to prepapre query: %w", err)
+		return fmt.Errorf("postgresql: unable to prepapre query: %w", err)
 	}
 	defer func(stmt *sqlx.Stmt) {
 		log.SafeClose(stmt, "Unable to close statement")
@@ -113,7 +91,7 @@ func (d *Default) Create(ctx context.Context, data interface{}) error {
 	// Do the insert query
 	_, err = stmt.ExecContext(ctx, args...)
 	if err != nil {
-		return xerrors.Errorf("postgresql: unable to execute query: %w", err)
+		return fmt.Errorf("postgresql: unable to execute query: %w", err)
 	}
 
 	return nil
@@ -133,13 +111,13 @@ func (d *Default) WhereCount(ctx context.Context, filter interface{}) (int, erro
 	// Build sql query
 	q, args, err := qb.ToSql()
 	if err != nil {
-		return 0, xerrors.Errorf("postgresql: unable to build query: %w", err)
+		return 0, fmt.Errorf("postgresql: unable to build query: %w", err)
 	}
 
 	// Prepare the statement
 	stmt, err := d.session.PreparexContext(ctx, q)
 	if err != nil {
-		return 0, xerrors.Errorf("postgresql: unable to prepare query: %w", err)
+		return 0, fmt.Errorf("postgresql: unable to prepare query: %w", err)
 	}
 	defer func(stmt *sqlx.Stmt) {
 		log.SafeClose(stmt, "Unable to close statement")
@@ -149,7 +127,7 @@ func (d *Default) WhereCount(ctx context.Context, filter interface{}) (int, erro
 	if err := stmt.QueryRowContext(ctx, args...).Scan(&count); err == sql.ErrNoRows {
 		return 0, db.ErrNoResult
 	} else if err != nil {
-		return 0, xerrors.Errorf("postgresql: unable to execute query: %w", err)
+		return 0, fmt.Errorf("postgresql: unable to execute query: %w", err)
 	}
 
 	// Return no error
@@ -168,13 +146,13 @@ func (d *Default) WhereAndFetchOne(ctx context.Context, filter interface{}, resu
 	// Build sql query
 	q, args, err := qb.ToSql()
 	if err != nil {
-		return xerrors.Errorf("postgresql: unable to build query: %w", err)
+		return fmt.Errorf("postgresql: unable to build query: %w", err)
 	}
 
 	// Prepare the statement
 	stmt, err := d.session.PreparexContext(ctx, q)
 	if err != nil {
-		return xerrors.Errorf("postgresql: unable to prepare query: %w", err)
+		return fmt.Errorf("postgresql: unable to prepare query: %w", err)
 	}
 	defer func(stmt *sqlx.Stmt) {
 		log.SafeClose(stmt, "Unable to close statement")
@@ -185,7 +163,7 @@ func (d *Default) WhereAndFetchOne(ctx context.Context, filter interface{}, resu
 	if err == sql.ErrNoRows {
 		return db.ErrNoResult
 	} else if err != nil {
-		return xerrors.Errorf("postgresql: unable to execute query: %w", err)
+		return fmt.Errorf("postgresql: unable to execute query: %w", err)
 	}
 
 	// Return no error
@@ -203,13 +181,13 @@ func (d *Default) Update(ctx context.Context, updates map[string]interface{}, fi
 	// Build sql query
 	q, args, err := qb.ToSql()
 	if err != nil {
-		return xerrors.Errorf("postgresql: unable to build query: %w", err)
+		return fmt.Errorf("postgresql: unable to build query: %w", err)
 	}
 
 	// Prepare the statement
 	stmt, err := d.session.PreparexContext(ctx, q)
 	if err != nil {
-		return xerrors.Errorf("postgresql: unable to prepare query: %w", err)
+		return fmt.Errorf("postgresql: unable to prepare query: %w", err)
 	}
 	defer func(stmt *sqlx.Stmt) {
 		log.SafeClose(stmt, "Unable to close statement")
@@ -218,13 +196,13 @@ func (d *Default) Update(ctx context.Context, updates map[string]interface{}, fi
 	// Do the insert query
 	res, err := stmt.ExecContext(ctx, args...)
 	if err != nil {
-		return xerrors.Errorf("postgresql: unable to execute query: %w", err)
+		return fmt.Errorf("postgresql: unable to execute query: %w", err)
 	}
 
 	// Check updates
 	count, err := res.RowsAffected()
 	if err != nil {
-		return xerrors.Errorf("postgresql: unable to retrieve query result: %w", err)
+		return fmt.Errorf("postgresql: unable to retrieve query result: %w", err)
 	}
 
 	// If no rows where affected return an handled error
@@ -247,13 +225,13 @@ func (d *Default) RemoveOne(ctx context.Context, filter interface{}) error {
 	// Build sql query
 	q, args, err := qb.ToSql()
 	if err != nil {
-		return xerrors.Errorf("postgresql: unable to build query: %w", err)
+		return fmt.Errorf("postgresql: unable to build query: %w", err)
 	}
 
 	// Prepare the statement
 	stmt, err := d.session.PreparexContext(ctx, q)
 	if err != nil {
-		return xerrors.Errorf("postgresql: unable to prepare query: %w", err)
+		return fmt.Errorf("postgresql: unable to prepare query: %w", err)
 	}
 	defer func(stmt *sqlx.Stmt) {
 		log.SafeClose(stmt, "Unable to close statement")
@@ -262,13 +240,13 @@ func (d *Default) RemoveOne(ctx context.Context, filter interface{}) error {
 	// Do the insert query
 	res, err := stmt.ExecContext(ctx, args...)
 	if err != nil {
-		return xerrors.Errorf("postgresql: unable to execute query: %w", err)
+		return fmt.Errorf("postgresql: unable to execute query: %w", err)
 	}
 
 	// Check updates
 	count, err := res.RowsAffected()
 	if err != nil {
-		return xerrors.Errorf("postgresql: unable to retrieve query result: %w", err)
+		return fmt.Errorf("postgresql: unable to retrieve query result: %w", err)
 	}
 
 	// If no rows where affected return an handled error
@@ -290,7 +268,7 @@ func (d *Default) Search(ctx context.Context, filter interface{}, pagination *db
 	// Count result set first
 	count, err := d.WhereCount(ctx, filter)
 	if err != nil {
-		return 0, xerrors.Errorf("postgresql: unable to retrieve collection count: %w", err)
+		return 0, fmt.Errorf("postgresql: unable to retrieve collection count: %w", err)
 	}
 
 	// If no result skip data request
@@ -320,13 +298,13 @@ func (d *Default) Search(ctx context.Context, filter interface{}, pagination *db
 	// Do the query
 	sqlData, args, err := q.ToSql()
 	if err != nil {
-		return 0, xerrors.Errorf("postgresql: unable to build query: %w", err)
+		return 0, fmt.Errorf("postgresql: unable to build query: %w", err)
 	}
 
 	// Prepare the statement
 	stmt, err := d.session.PreparexContext(ctx, sqlData)
 	if err != nil {
-		return 0, xerrors.Errorf("postgresql: unable to prepare query: %w", err)
+		return 0, fmt.Errorf("postgresql: unable to prepare query: %w", err)
 	}
 	defer func(stmt *sqlx.Stmt) {
 		log.SafeClose(stmt, "Unable to close statement")
@@ -335,7 +313,7 @@ func (d *Default) Search(ctx context.Context, filter interface{}, pagination *db
 	if err := stmt.SelectContext(ctx, results, args...); err == sql.ErrNoRows {
 		return 0, db.ErrNoResult
 	} else if err != nil {
-		return 0, xerrors.Errorf("postgresql: unable to execute query: %w", err)
+		return 0, fmt.Errorf("postgresql: unable to execute query: %w", err)
 	}
 
 	// Return no error

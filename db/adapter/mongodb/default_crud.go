@@ -1,49 +1,26 @@
-// MIT License
-//
-// Copyright (c) 2019 Thibault NORMAND
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
-
 package mongodb
 
 import (
 	"context"
-
-	mongowrapper "github.com/opencensus-integrations/gomongowrapper"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"golang.org/x/xerrors"
+	"fmt"
 
 	"go.zenithar.org/pkg/db"
 	"go.zenithar.org/pkg/log"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Default contains the basic implementation of the MongoCRUD interface
 type Default struct {
 	table   string
 	db      string
-	session *mongowrapper.WrappedClient
+	session *mongo.Client
 }
 
 // NewCRUDTable sets up a new Default struct
-func NewCRUDTable(session *mongowrapper.WrappedClient, db, table string) *Default {
+func NewCRUDTable(session *mongo.Client, db, table string) *Default {
 	return &Default{
 		db:      db,
 		table:   table,
@@ -235,7 +212,7 @@ func (d *Default) Search(ctx context.Context, filter interface{}, sortParams *db
 	// Get total
 	count, err := d.WhereCount(ctx, filter)
 	if err != nil {
-		return 0, xerrors.Errorf("mongodb: unable to count element before search: %w", err)
+		return 0, fmt.Errorf("mongodb: unable to count element before search: %w", err)
 	}
 	// If no result skip data request
 	if count == 0 {
@@ -266,22 +243,22 @@ func (d *Default) Search(ctx context.Context, filter interface{}, sortParams *db
 	// Do the query
 	cur, err := d.session.Database(d.db).Collection(d.table).Find(ctx, filter, opts)
 	if err != nil {
-		return 0, xerrors.Errorf("mongodb: unable to query collection: %w", err)
+		return 0, fmt.Errorf("mongodb: unable to query collection: %w", err)
 	}
 
 	// Extract all entities
 	if err := cur.All(ctx, results); err != nil {
-		return 0, xerrors.Errorf("mongodb: unable to extract entities: %w", err)
+		return 0, fmt.Errorf("mongodb: unable to extract entities: %w", err)
 	}
 
 	// Check if cursor has errors
 	if err := cur.Err(); err != nil {
-		return 0, xerrors.Errorf("mongodb: cursor has error: %w", err)
+		return 0, fmt.Errorf("mongodb: cursor has error: %w", err)
 	}
 
 	// Close the cursor
 	if err := cur.Close(ctx); err != nil {
-		return 0, xerrors.Errorf("mongodb: unable to close cursor: %w", err)
+		return 0, fmt.Errorf("mongodb: unable to close cursor: %w", err)
 	}
 
 	// Return no error
@@ -294,17 +271,17 @@ func (d *Default) Search(ctx context.Context, filter interface{}, sortParams *db
 type TransactionFunc func() error
 
 // Transaction runs the transactionfunc in a transaction
-func Transaction(ctx context.Context, client *mongowrapper.WrappedClient, fn TransactionFunc) error {
+func Transaction(ctx context.Context, client *mongo.Client, fn TransactionFunc) error {
 	return client.UseSession(ctx, func(sctx mongo.SessionContext) error {
 		// Start transaction
 		if err := sctx.StartTransaction(); err != nil {
-			return xerrors.Errorf("mongodb: %w", err)
+			return fmt.Errorf("mongodb: %w", err)
 		}
 
 		// Run the closure
 		if err := fn(); err != nil {
 			log.CheckErrCtx(sctx, "Unable to abort transaction", sctx.AbortTransaction(sctx))
-			return xerrors.Errorf("mongodb: %w", err)
+			return fmt.Errorf("mongodb: %w", err)
 		}
 
 		for {

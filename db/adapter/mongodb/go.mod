@@ -1,14 +1,16 @@
 module go.zenithar.org/pkg/db/adapter/mongodb
 
-go 1.12
+go 1.14
 
-replace github.com/opencensus-integrations/gomongowrapper v0.0.1 => github.com/Zenithar/gomongowrapper v0.0.2
+replace go.zenithar.org/pkg/db => ../../../db
+
+replace go.zenithar.org/pkg/log => ../../../log
 
 require (
-	github.com/opencensus-integrations/gomongowrapper v0.0.1
-	go.mongodb.org/mongo-driver v1.0.1-0.20190812160042-74cffef35f2e
-	go.uber.org/zap v1.10.0
-	go.zenithar.org/pkg/db v0.0.3
-	go.zenithar.org/pkg/log v0.2.0
-	golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
+	github.com/google/go-cmp v0.3.0 // indirect
+	github.com/xdg/stringprep v1.0.0 // indirect
+	go.mongodb.org/mongo-driver v1.3.2
+	go.uber.org/zap v1.14.1
+	go.zenithar.org/pkg/db v0.0.0-00010101000000-000000000000
+	go.zenithar.org/pkg/log v0.0.0-00010101000000-000000000000
 )

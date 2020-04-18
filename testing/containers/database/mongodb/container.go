@@ -1,11 +1,11 @@
-package database
+package mongodb
 
 import (
 	"fmt"
 	"log"
 
 	"github.com/dchest/uniuri"
-	dockertest "gopkg.in/ory-am/dockertest.v3"
+	dockertest "github.com/ory/dockertest/v3"
 
 	"go.zenithar.org/pkg/testing/containers"
 )
@@ -67,6 +67,6 @@ func newMongoDBContainer(pool *dockertest.Pool) *mongoDBContainer {
 
 // Close the container
 func (container *mongoDBContainer) Close() error {
-	log.Printf("Postgres (%v): shutting down", container.Name)
+	log.Printf("MongoDB (%v): shutting down", container.Name)
 	return container.pool.Purge(container.resource)
 }

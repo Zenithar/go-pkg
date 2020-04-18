@@ -1,16 +1,17 @@
-package database
+package postgresql
 
 import (
 	"fmt"
 	"log"
 
-	// Load driver if not already done
-	_ "github.com/lib/pq"
+	"go.zenithar.org/pkg/testing/containers"
 
 	"github.com/dchest/uniuri"
-	dockertest "gopkg.in/ory-am/dockertest.v3"
+	dockertest "github.com/ory/dockertest/v3"
 
-	"go.zenithar.org/pkg/testing/containers"
+	// Load driver if not already done
+	_ "github.com/jackc/pgx/v4"
+	_ "github.com/lib/pq"
 )
 
 var (

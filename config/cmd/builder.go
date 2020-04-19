@@ -5,8 +5,8 @@ import (
 	"sort"
 	"strings"
 
-	"go.zenithar.org/pkg/flags"
 	"go.zenithar.org/pkg/log"
+	"go.zenithar.org/pkg/types"
 
 	defaults "github.com/mcuadros/go-defaults"
 	toml "github.com/pelletier/go-toml"
@@ -42,7 +42,7 @@ func NewConfigCommand(conf interface{}, envPrefix string) *cobra.Command {
 				}
 				fmt.Println(string(btes))
 			} else {
-				m := flags.AsEnvVariables(conf, upPrefix, true)
+				m := types.AsEnvVariables(conf, upPrefix, true)
 				keys := []string{}
 
 				for k := range m {

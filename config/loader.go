@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"go.zenithar.org/pkg/flags"
 	"go.zenithar.org/pkg/log"
+	"go.zenithar.org/pkg/types"
 
 	defaults "github.com/mcuadros/go-defaults"
 	"github.com/spf13/viper"
@@ -23,7 +23,7 @@ func Load(conf interface{}, envPrefix string, cfgFile string) error {
 	upPrefix := strings.ToUpper(envPrefix)
 
 	// Overrides with environment
-	for k := range flags.AsEnvVariables(conf, "", false) {
+	for k := range types.AsEnvVariables(conf, "", false) {
 		envName := fmt.Sprintf("%s_%s", upPrefix, k)
 		log.CheckErr("Unable to bind environment variable", viper.BindEnv(strings.ToLower(strings.Replace(k, "_", ".", -1)), envName), zap.String("var", envName))
 	}

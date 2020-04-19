@@ -8,7 +8,7 @@ import (
 	"go.zenithar.org/pkg/log"
 	"go.zenithar.org/pkg/platform/actors"
 	"go.zenithar.org/pkg/platform/internal/reloader"
-	"go.zenithar.org/pkg/platform/observability"
+	"go.zenithar.org/pkg/platform/telemetry"
 
 	"github.com/dchest/uniuri"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
@@ -70,7 +70,7 @@ func Serve(ctx context.Context, srv Server) error {
 
 	// Register opentelemetry agent if enabled
 	if srv.Instrumentation.Telemetry.Enable {
-		_, err := observability.Agent(fmt.Sprintf("%s-%s", srv.Name, appID))
+		_, err := telemetry.Agent(fmt.Sprintf("%s-%s", srv.Name, appID))
 		if err != nil {
 			return fmt.Errorf("unable to start observability features: %w", err)
 		}

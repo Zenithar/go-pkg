@@ -42,7 +42,10 @@ func NewConfigCommand(conf interface{}, envPrefix string) *cobra.Command {
 				}
 				fmt.Println(string(btes))
 			} else {
-				m := types.AsEnvVariables(conf, upPrefix, true)
+				m, err := types.AsEnvVariables(conf, upPrefix, true)
+				if err != nil {
+					log.For(cmd.Context()).Fatal("Error during environment variables processing", zap.Error(err))
+				}
 				keys := []string{}
 
 				for k := range m {

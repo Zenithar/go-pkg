@@ -23,7 +23,12 @@ func Load(conf interface{}, envPrefix string, cfgFile string) error {
 	upPrefix := strings.ToUpper(envPrefix)
 
 	// Overrides with environment
-	for k := range types.AsEnvVariables(conf, "", false) {
+	env, err := types.AsEnvVariables(conf, "", false)
+	if err != nil {
+		return err
+	}
+
+	for k := range env {
 		envName := fmt.Sprintf("%s_%s", upPrefix, k)
 		log.CheckErr("Unable to bind environment variable", viper.BindEnv(strings.ToLower(strings.Replace(k, "_", ".", -1)), envName), zap.String("var", envName))
 	}

@@ -8,7 +8,7 @@ require (
 	github.com/TheZeroSlave/zapsentry v1.3.0
 	github.com/allegro/bigcache v1.2.1
 	github.com/cheekybits/is v0.0.0-20150225183255-68e9c0620927 // indirect
-	github.com/cloudflare/tableflip v1.0.0
+	github.com/cloudflare/tableflip v1.2.1
 	github.com/dchest/uniuri v0.0.0-20200228104902-7aecb25e1fe5
 	github.com/fatih/structs v1.1.0
 	github.com/go-ozzo/ozzo-validation/v4 v4.1.0

@@ -13,7 +13,7 @@ require (
 	github.com/fatih/structs v1.1.0
 	github.com/go-ozzo/ozzo-validation/v4 v4.1.0
 	github.com/go-redis/redis/v7 v7.2.0
-	github.com/google/go-cmp v0.4.0
+	github.com/google/go-cmp v0.5.2
 	github.com/gorilla/schema v1.1.0
 	github.com/jackc/pgx/v4 v4.6.0
 	github.com/jmoiron/sqlx v1.2.0
@@ -31,7 +31,7 @@ require (
 	github.com/sony/gobreaker v0.4.1
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.6.3
-	go.mongodb.org/mongo-driver v1.3.2
+	go.mongodb.org/mongo-driver v1.5.1
 	go.opencensus.io v0.22.3
 	go.uber.org/zap v1.14.1
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543

@@ -13,7 +13,7 @@ require (
 	github.com/fatih/structs v1.1.0
 	github.com/go-ozzo/ozzo-validation/v4 v4.1.0
 	github.com/go-redis/redis/v7 v7.2.0
-	github.com/google/go-cmp v0.4.0
+	github.com/google/go-cmp v0.5.9
 	github.com/gorilla/schema v1.1.0
 	github.com/jackc/pgx/v4 v4.6.0
 	github.com/jmoiron/sqlx v1.2.0
@@ -32,10 +32,10 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.6.3
 	go.mongodb.org/mongo-driver v1.3.2
-	go.opencensus.io v0.22.3
+	go.opencensus.io v0.24.0
 	go.uber.org/zap v1.14.1
-	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
-	google.golang.org/grpc v1.28.1
+	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2
+	google.golang.org/grpc v1.53.0
 	gopkg.in/matryer/try.v1 v1.0.0-20150601225556-312d2599e12e
 	gopkg.in/rethinkdb/rethinkdb-go.v6 v6.2.1
 )
